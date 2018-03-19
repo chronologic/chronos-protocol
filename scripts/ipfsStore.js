@@ -20,7 +20,9 @@ const getId = (node) => {
 
 const addString = (node, msg) => {
     return new Promise(resolve => {
-        node.files.add([Buffer.from(msg)], (err, filesAdded) => {
+        node.files.add([Buffer.from(msg)], {
+            'cid-version': 0,
+        }, (err, filesAdded) => {
             if (err) throw err
             resolve(filesAdded[0].hash)
         })
