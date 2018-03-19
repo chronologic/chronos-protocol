@@ -1,4 +1,4 @@
-pragma solidity ^0.4.20;
+pragma solidity ^0.4.19;
 
 contract ScheduledTransaction {
     function init() public payable {}
