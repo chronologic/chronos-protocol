@@ -1,7 +1,7 @@
 pragma solidity ^0.4.20;
 
 // import IPFS.sol
-import "ScheduledTransaction.sol";
+import "./ScheduledTransaction.sol";
 
 contract Scheduler {
     function () public { revert(); }
@@ -36,7 +36,7 @@ contract Scheduler {
         require(msg.value >= endowment);
 
         // bytes ipfsHash = IPFS.generateHash(_serializedParams);
-        bytes ipfsHash;
+        bytes memory ipfsHash;
         scheduledTx = createTransaction(ipfsHash);
         require(scheduledTx != 0x0);
 
@@ -45,7 +45,7 @@ contract Scheduler {
         NewScheduledTransaction(scheduledTx, msg.sender);
     }
 
-    function createTransaction() {}
+    function createTransaction(bytes _hash) public returns (address) {}
 
     event NewScheduledTransaction(address _tx, address indexed _creator);
 }

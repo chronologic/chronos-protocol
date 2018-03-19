@@ -1,0 +1,24 @@
+{
+  "name": "eac-v2",
+  "version": "0.0.1",
+  "description": "Version two of the Ethereum Alarm Clock Scheduling service.",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chronologic/EAC-v2.git"
+  },
+  "author": "lsaether",
+  "bugs": {
+    "url": "https://github.com/chronologic/EAC-v2/issues"
+  },
+  "homepage": "https://github.com/chronologic/EAC-v2#readme",
+  "dependencies": {
+    "ethers": "^3.0.7"
+  }
+}
