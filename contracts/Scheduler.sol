@@ -1,6 +1,7 @@
 pragma solidity ^0.4.20;
 
 // import IPFS.sol
+import "ScheduledTransaction.sol";
 
 contract Scheduler {
     function () public { revert(); }
@@ -34,13 +35,14 @@ contract Scheduler {
         uint endowment = value + callGas * gasPrice + bounty + fee;
         require(msg.value >= endowment);
 
-        // bytes hash = IPFS.generateHash(_serializedParams);
-        scheduledTx = createTransaction(hash)
+        // bytes ipfsHash = IPFS.generateHash(_serializedParams);
+        bytes ipfsHash;
+        scheduledTx = createTransaction(ipfsHash);
         require(scheduledTx != 0x0);
 
-        ScheduledTransaction(scheduledTx).init.value(msg.value)
+        ScheduledTransaction(scheduledTx).init.value(msg.value);
         // Store in the request tracker
-        NewScheduledTransaction(scheduledTx, msg.sender)
+        NewScheduledTransaction(scheduledTx, msg.sender);
     }
 
     function createTransaction() {}
