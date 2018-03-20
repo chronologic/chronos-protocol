@@ -25,6 +25,7 @@ contract Scheduler is CloneFactory {
     {
         DEBUG(_serializedParams);
         // Deploy the ScheduledTransaction contract
+        
         address recipient;
         uint256 value;
         uint256 callGas;

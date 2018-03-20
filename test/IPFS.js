@@ -8,9 +8,9 @@ contract("IPFS", (accounts) => {
     it("correctly parses a string to IPFS hash", async () => {
         const ipfs = await IPFS_Contract.new()
         const genHash = await ipfs.generateHash(test_string)
-        console.log(genHash)
+        // console.log(genHash)
         const encoded = b58.encode(Buffer.from("1220" + genHash.slice(2), 'hex'))
-        console.log(encoded)
+        // console.log(encoded)
         assert(
             encoded == expected_output,
             'output did not match expected'
