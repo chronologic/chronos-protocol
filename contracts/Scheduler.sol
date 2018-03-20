@@ -12,9 +12,12 @@ contract Scheduler {
         ipfs = _ipfsLib;
     }
 
-    function schedule(string _serializedParams) 
+    event DEBUG(bytes __B);
+
+    function schedule(bytes _serializedParams) 
         public payable returns (address scheduledTx)
     {
+        DEBUG(_serializedParams);
         // Deploy the ScheduledTransaction contract
         address recipient;
         uint256 value;
@@ -27,30 +30,55 @@ contract Scheduler {
         // No requiredDeposit - Use Day Token now
 
         assembly {
-            recipient := mload(_serializedParams)
-            value := mload(add(_serializedParams, 32))
-            callGas := mload(add(_serializedParams, 64))
-            gasPrice := mload(add(_serializedParams, 96))
-            executionWindowStart := mload(add(_serializedParams, 128))
-            executionWindowLength := mload(add(_serializedParams, 160))
-            bounty := mload(add(_serializedParams, 192))
-            fee := mload(add(_serializedParams, 224))
+            recipient := mload(add(_serializedParams, 32))
+            value := mload(add(_serializedParams,64))
+            callGas := mload(add(_serializedParams, 96))
+            gasPrice := mload(add(_serializedParams, 128))
+            executionWindowStart := mload(add(_serializedParams, 160))
+            executionWindowLength := mload(add(_serializedParams, 192))
+            bounty := mload(add(_serializedParams, 224))
+            fee := mload(add(_serializedParams, 256))
             // CallData = everything after this
         }
 
-        uint endowment = value + callGas * gasPrice + bounty + fee;
-        require(msg.value >= endowment);
+        Params(
+            recipient,
+            value,
+            callGas,
+            gasPrice,
+            executionWindowStart,
+            executionWindowLength,
+            bounty,
+            fee
+        );
 
-        bytes32 ipfsHash = IPFS(ipfs).generateHash(_serializedParams);
+        // uint endowment = value + callGas * gasPrice + bounty + fee;
+        // require(msg.value >= endowment);
+
+        bytes32 ipfsHash = IPFS(ipfs).generateHash(string(_serializedParams));
+        DEBUG2(ipfsHash);
         scheduledTx = createTransaction(ipfsHash);
-        require(scheduledTx != 0x0);
+        // require(scheduledTx != 0x0);
 
         ScheduledTransaction(scheduledTx).init.value(msg.value);
         // Store in the request tracker
         NewScheduledTransaction(scheduledTx, msg.sender);
     }
 
+    event DEBUG2(bytes32 _part);
+
+
     function createTransaction(bytes32 _hash) public pure returns (address) {}
 
     event NewScheduledTransaction(address tx, address indexed creator);
+    event Params(
+        address recip,
+        uint256 val,
+        uint256 ga,
+        uint256 gp,
+        uint256 ews,
+        uint256 ewl,
+        uint256 b,
+        uint256 f
+    );
 }

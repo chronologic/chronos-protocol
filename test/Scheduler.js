@@ -4,6 +4,8 @@ const Scheduler = artifacts.require('Scheduler.sol')
 const ipfsNode = require('../scripts/ipfsNode')
 const Serializer = require('../scripts/serializeTransaction')
 
+const b58 = require('base-58')
+
 contract("Scheduler", (accounts) => {
     let ipfs
     let scheduler
@@ -35,12 +37,15 @@ contract("Scheduler", (accounts) => {
             60,
             70,
         )
-        console.log(encoded)
-        // const hash = await ipfsNode.addString(node, data)
-
+        const hash = await ipfsNode.addString(node, Buffer.from(encoded.slice(2), 'hex'))
+        console.log(hash)
+        const tx = await scheduler.schedule(encoded)
+        // console.log(tx.logs[0])
+        // console.log(tx.logs[1].args)
+        console.log(b58.encode(Buffer.from('1220' + tx.logs[2].args._part.slice(2), 'hex')))
     })
 
     after(async() => {
-        ipfsNode.shutdown(node)
+        await ipfsNode.shutdown(node)
     })
 })
