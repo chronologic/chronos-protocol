@@ -9,14 +9,11 @@ contract("IPFS", (accounts) => {
         const ipfs = await IPFS_Contract.new()
         const genHash = await ipfs.generateHash(test_string)
         console.log(genHash)
-        const encoded = b58.encode(Buffer.from(genHash.slice(2), 'hex'))
+        const encoded = b58.encode(Buffer.from("1220" + genHash.slice(2), 'hex'))
         console.log(encoded)
-        // console.log(b58.decode(encoded))
-        // console.log(genHash)
-        // assert.equal(1 == 2)
-        // assert(
-        //     genHash == expected_output,
-        //     'output did not match expected'
-        // )
+        assert(
+            encoded == expected_output,
+            'output did not match expected'
+        )
     })
 })

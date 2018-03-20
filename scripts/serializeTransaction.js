@@ -64,4 +64,6 @@ const testTransactionSerializer = () => {
     console.log(serialized)
 }
 
-testTransactionSerializer()
+// testTransactionSerializer()
+
+module.exports = TransactionSerializer

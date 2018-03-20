@@ -59,4 +59,12 @@ const main = async () => {
     console.log('shutdown node')
 }
 
-main()
+// main()
+
+module.exports = {
+    startNode,
+    getId,
+    addString,
+    getString,
+    shutdown,
+}

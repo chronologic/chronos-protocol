@@ -20,17 +20,18 @@ contract IPFS {
     bytes constant ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
 
     function generateHash(string _data) 
-        public constant returns (bytes b58Hash)
+        public constant returns (bytes32 sha256HashOfData)//(bytes b58Hash)
     {
         // Convert the string to bytes explicitly.
         bytes memory data = bytes(_data);
         //
         bytes memory len1 = lengthEncode(data.length);
         bytes memory len2 = lengthEncode(data.length + 4 + 2*len1.length);
+        return sha256(Prefix1, len2, Prefix2, len1, data, Postfix, len1);
         // return concat(concat(Sha256MultiHashPrefix, LengthPrefix), toBytes(sha256(Prefix1, len2, Prefix2, len1, data, Postfix, len1)));
-        return base58(concat(concat(Sha256MultiHashPrefix, LengthPrefix), toBytes(sha256(
-            Prefix1, len2, Prefix2, len1, data, Postfix, len1
-        ))));
+        // return base58(concat(concat(Sha256MultiHashPrefix, LengthPrefix), toBytes(sha256(
+        //     Prefix1, len2, Prefix2, len1, data, Postfix, len1
+        // ))));
     }
 
     function lengthEncode(uint256 _length)
@@ -63,8 +64,8 @@ contract IPFS {
             while (carry > 0) {
                 digits[digitLength] = uint8(carry % 58);
                 digitLength++;
-                carry = carry / 58; // this line throws the invalid opcode
-                // carry = 0; // this fixes it
+                // carry = carry / 58; // this line throws the invalid opcode
+                carry = 0; // this fixes it
             }
         }
         return _source; // this is for testing
@@ -112,7 +113,7 @@ contract IPFS {
     }
 
     function bin(uint256 _x) 
-        public returns (bytes)
+        public view returns (bytes)
     {
         if (_x == 0) {
             return new bytes(0);
