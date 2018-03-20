@@ -1,5 +1,9 @@
 pragma solidity ^0.4.19;
 
 contract ScheduledTransaction {
-    function init() public payable {}
+    bytes32 public ipfsHash;
+
+    function init(bytes32 _ipfsHash) public payable {
+        ipfsHash = _ipfsHash;
+    }
 }
