@@ -30,28 +30,65 @@ contract("Scheduler", (accounts) => {
     })
 
     it('schedules', async() => {
+        // serializer is a utility to serialize the parameters to schedule
+        // an EACv2 call into an ABI encoded hex string 
         const serializer = new Serializer()
+
+        // set up params
+        const recipient = '0x7eD1E469fCb3EE19C0366D829e291451bE638E59'
+        const value = 10
+        const callGas = 20
+        const gasPrice = 30
+        const executionWindowStart = 40
+        const executionWindowLength = 50
+        const bounty = 60
+        const fee = 70
+
+        // serialize params
         const encoded = serializer.serialize(
-            '0x7eD1E469fCb3EE19C0366D829e291451bE638E59',
-            10,
-            20,
-            30,
-            40,
-            50,
-            60,
-            70,
+            recipient,
+            value,
+            callGas,
+            gasPrice,
+            executionWindowStart,
+            executionWindowLength,
+            bounty,
+            fee,
         )
-        const hash = await ipfsNode.addString(node, Buffer.from(encoded.slice(2), 'hex'))
-        // console.log(hash)
+
+        // use our running IPFS node to add this encoded hex string (minus the 0x)
+        const expectedIpfsHash = await ipfsNode.addString(node, Buffer.from(encoded.slice(2), 'hex'))
+
+        // schedule a call using the same encoded hex string
         const tx = await scheduler.schedule(encoded)
-        // console.log(tx.logs[0])
-        // console.log(tx.logs[1].args)
-        // console.log(b58.encode(Buffer.from('1220' + tx.logs[2].args._part.slice(2), 'hex')))
+
+        // find the logs containing the newly scheduled contract
         const newTx = tx.logs.find(log => log.event === 'NewScheduledTransaction')
         const newTxAddr = newTx.args.tx
+
+        // init the ScheduledTransaction wrapper on this address
         const n = await ScheduledTransaction.at(newTxAddr)
+
+        // grab the ipfsHash
         const res = await n.ipfsHash()
-        console.log(res)
+
+        // format it 
+        const receivedHash = b58.encode(Buffer.from('1220' + res.slice(2), 'hex'))
+
+        // make sure they match
+        assert(expectedIpfsHash === receivedHash)
+
+        // get the bytes back
+        const result = await ipfsNode.getString(node, receivedHash)
+
+        // convert to hex and add back the `0x`
+        const data = '0x' + result.toString('hex')
+
+        // now the encoded data should be the same as the data we got back from the contract
+        assert(encoded === data)
+
+        console.log(encoded)
+        console.log(data)
     })
 
     after(async() => {
