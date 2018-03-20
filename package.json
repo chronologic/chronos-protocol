@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/chronologic/EAC-v2#readme",
   "dependencies": {
+    "base-58": "0.0.1",
     "ethers": "^3.0.7",
     "ipfs": "^0.28.2"
   }

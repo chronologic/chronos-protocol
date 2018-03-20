@@ -27,6 +27,7 @@ contract IPFS {
         //
         bytes memory len1 = lengthEncode(data.length);
         bytes memory len2 = lengthEncode(data.length + 4 + 2*len1.length);
+        // return concat(concat(Sha256MultiHashPrefix, LengthPrefix), toBytes(sha256(Prefix1, len2, Prefix2, len1, data, Postfix, len1)));
         return base58(concat(concat(Sha256MultiHashPrefix, LengthPrefix), toBytes(sha256(
             Prefix1, len2, Prefix2, len1, data, Postfix, len1
         ))));
@@ -62,10 +63,12 @@ contract IPFS {
             while (carry > 0) {
                 digits[digitLength] = uint8(carry % 58);
                 digitLength++;
-                carry = carry / 58;
+                carry = carry / 58; // this line throws the invalid opcode
+                // carry = 0; // this fixes it
             }
         }
-        return toAlphabet(reverse(truncate(digits, digitLength)));
+        return _source; // this is for testing
+        // return toAlphabet(reverse(truncate(digits, digitLength)));
     }
 
     function truncate(uint8[] _array, uint8 _length)
