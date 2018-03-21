@@ -5,16 +5,22 @@ import "./EventEmitter.sol";
 import "./IPFS.sol";
 import "./ScheduledTransaction.sol";
 
-contract Scheduler is CloneFactory, EventEmitter {
-    function () public { revert(); }
+contract Scheduler is CloneFactory {
+    function () public {revert();}
 
-    address ipfs;
-    address scheduledTxCore;
+    address public eventEmitter;
+    address public feeRecipient;
+    address public ipfs;
+    address public scheduledTxCore;
 
     function Scheduler(
+        address _eventEmitter,
+        address _feeRecipient,
         address _ipfsLib,
         address _scheduledTxCore
     ) public {
+        eventEmitter = _eventEmitter;
+        feeRecipient = _feeRecipient;
         ipfs = _ipfsLib;
         scheduledTxCore = _scheduledTxCore;
     }
@@ -22,9 +28,6 @@ contract Scheduler is CloneFactory, EventEmitter {
     function schedule(bytes _serializedParams) 
         public payable returns (address scheduledTx)
     {
-        // DEBUG(_serializedParams);
-        // Deploy the ScheduledTransaction contract
-
         address recipient;
         uint256 value;
         uint256 callGas;
@@ -47,32 +50,30 @@ contract Scheduler is CloneFactory, EventEmitter {
             // CallData = everything after this
         }
 
-        logParameters(
-            recipient,
-            value,
-            callGas,
-            gasPrice,
-            executionWindowStart,
-            executionWindowLength,
-            bounty,
-            fee
-        );
+        // EventEmitter(eventEmitter).logParameters(
+        //     recipient,
+        //     value,
+        //     callGas,
+        //     gasPrice,
+        //     executionWindowStart,
+        //     executionWindowLength,
+        //     bounty,
+        //     fee
+        // );
 
         // uint endowment = value + callGas * gasPrice + bounty + fee;
         // require(msg.value >= endowment);
 
         bytes32 ipfsHash = IPFS(ipfs).generateHash(string(_serializedParams));
-        // DEBUG2(ipfsHash);
+
         scheduledTx = createTransaction();
         require(scheduledTx != 0x0);
 
-        ScheduledTransaction(scheduledTx).init.value(msg.value)(ipfsHash, msg.sender);
-        // Store in the request tracker
-        logNewTransactionScheduled(scheduledTx, msg.sender);
-    }
+        ScheduledTransaction(scheduledTx).init.value(msg.value)(ipfsHash, msg.sender, address(this));
 
-    event DEBUG(bytes __B);
-    event DEBUG2(bytes32 _part);
+        // Record on the event emitter
+        EventEmitter(eventEmitter).logNewTransactionScheduled(scheduledTx, msg.sender, address(this));
+    }
 
     function createTransaction() public returns (address) {
         return createClone(scheduledTxCore);

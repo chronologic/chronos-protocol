@@ -1,3 +1,4 @@
+const EventEmitter = artifacts.require('EventEmitter.sol')
 const IPFS = artifacts.require('IPFS.sol')
 const Scheduler = artifacts.require('Scheduler.sol')
 const ScheduledTransaction = artifacts.require('ScheduledTransaction.sol')
@@ -8,6 +9,7 @@ const Serializer = require('../scripts/serializeTransaction')
 const b58 = require('base-58')
 
 contract("Scheduler", (accounts) => {
+    let eventEmitter
     let ipfs
     let scheduler
     let scheduledTxCore
@@ -16,14 +18,16 @@ contract("Scheduler", (accounts) => {
     let node
 
     before(async() => {
+        eventEmitter = await EventEmitter.new()
         ipfs = await IPFS.new()
         scheduledTxCore = await ScheduledTransaction.new()
-        scheduler = await Scheduler.new(ipfs.address, scheduledTxCore.address)
+        scheduler = await Scheduler.new(eventEmitter.address, '0x0', ipfs.address, scheduledTxCore.address)
 
         node = await ipfsNode.startNode()
     })
 
     it('successfully deployed', async() => {
+        assert(eventEmitter.address)
         assert(ipfs.address)
         assert(scheduledTxCore.address)
         assert(scheduler.address)
@@ -61,10 +65,18 @@ contract("Scheduler", (accounts) => {
 
         // schedule a call using the same encoded hex string
         const tx = await scheduler.schedule(encoded)
+        const getEvent = () => {
+            return new Promise(resolve => {
+                eventEmitter.allEvents().get((err,res) => {
+                    resolve(res[0].args)
+                })
+            })
+        }
+
+        const log = await getEvent()
 
         // find the logs containing the newly scheduled contract
-        const newTx = tx.logs.find(log => log.event === 'NewTransactionScheduled')
-        const newTxAddr = newTx.args.newTransaction
+        const newTxAddr = log.newTransaction
 
         // init the ScheduledTransaction wrapper on this address
         const n = await ScheduledTransaction.at(newTxAddr)

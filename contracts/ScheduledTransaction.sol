@@ -1,11 +1,15 @@
 pragma solidity ^0.4.19;
 
 import "./IPFS.sol";
+import "./Scheduler.sol";
 
 contract ScheduledTransaction {
     bytes32 public ipfsHash;
+    address public scheduledFrom;
 
     address owner = 0x0;
+
+    // will switch to true when initialized (prevents re-initialization)
     bool initialized = false;
     
     // will switch to true when claimed
@@ -15,15 +19,21 @@ contract ScheduledTransaction {
     // will switch to true when executed
     bool executed = false;
 
-    // will switch if successful
+    // will switch to true if successful
     bool successful = false;
 
     // disallow receiving ether
     function() public {revert();}
 
-    function init(bytes32 _ipfsHash, address _owner) public payable {
+    function init(
+        bytes32 _ipfsHash,
+        address _owner,
+        address _scheduledFrom
+    ) public payable {
+        require(!initialized);
         ipfsHash = _ipfsHash;
         owner = _owner;
+        scheduledFrom = _scheduledFrom;
         initialized = true;
     }
 
@@ -74,13 +84,16 @@ contract ScheduledTransaction {
 
         successful = recipient.call.value(value).gas(callGas)(callData);
 
-        //check fee recipient, send fee
-        // if (feeRecipient()) {
-
-        // }
         //check bounty recipient, send bounty
         address bountyRecipient = msg.sender;
         bountyRecipient.transfer(bounty);
+
+        //check fee recipient, send fee
+        address feeRecipient = Scheduler(scheduledFrom).feeRecipient();
+        if (feeRecipient != 0x0) {
+            feeRecipient.transfer(fee);
+        }
+        
         //send remaining ether back to scheduler
 
         return true;
