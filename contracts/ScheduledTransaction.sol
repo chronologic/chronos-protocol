@@ -5,8 +5,15 @@ import "./IPFS.sol";
 contract ScheduledTransaction {
     bytes32 public ipfsHash;
     
+    // will switch to true when claimed
+    bool claimed = false;
+    address claimingNode = 0x0;
+
     // will switch to true when executed
     bool executed = false;
+
+    // will switch if successful
+    bool successful = false;
 
     // disallow receiving ether
     function() public {revert();}
@@ -44,21 +51,31 @@ contract ScheduledTransaction {
 
         bytes32 callData = "";
 
-        //check msg.gas >= requireGas
+        //check gasleft() >= requiredGas
+        require(gasleft() >= callGas + 180000 - 25000);
         //check that this hasn't been executed yet
         require(!executed);
         //check in execution window
+        require(block.number >= executionWindowStart && block.number < executionWindowStart + executionWindowLength);
         //if claimed, check that claimer is executed
+        if (claimed && block.number < executionWindowStart + executionWindowLength / 2) {
+            require(msg.sender == claimingNode);
+        }
         //check gasPrice
         require(tx.gasprice == gasPrice);
 
         //mark that this has been executed
         executed = true;
 
-        bool successful = recipient.call.value(value).gas(callGas)(callData);
+        successful = recipient.call.value(value).gas(callGas)(callData);
 
         //check fee recipient, send fee
+        // if (feeRecipient()) {
+
+        // }
         //check bounty recipient, send bounty
+        address bountyRecipient = msg.sender;
+        bountyRecipient.transfer(bounty);
         //send remaining ether back to scheduler
 
         return true;

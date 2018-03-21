@@ -1,10 +1,11 @@
 pragma solidity ^0.4.19;
 
 import "./CloneFactory.sol";
+import "./EventEmitter.sol";
 import "./IPFS.sol";
 import "./ScheduledTransaction.sol";
 
-contract Scheduler is CloneFactory {
+contract Scheduler is CloneFactory, EventEmitter {
     function () public { revert(); }
 
     address ipfs;
@@ -25,7 +26,7 @@ contract Scheduler is CloneFactory {
     {
         DEBUG(_serializedParams);
         // Deploy the ScheduledTransaction contract
-        
+
         address recipient;
         uint256 value;
         uint256 callGas;
@@ -48,7 +49,7 @@ contract Scheduler is CloneFactory {
             // CallData = everything after this
         }
 
-        Params(
+        logParameters(
             recipient,
             value,
             callGas,
@@ -69,7 +70,7 @@ contract Scheduler is CloneFactory {
 
         ScheduledTransaction(scheduledTx).init.value(msg.value)(ipfsHash);
         // Store in the request tracker
-        NewScheduledTransaction(scheduledTx, msg.sender);
+        logNewTransactionScheduled(scheduledTx, msg.sender);
     }
 
     event DEBUG2(bytes32 _part);
@@ -78,16 +79,4 @@ contract Scheduler is CloneFactory {
     function createTransaction() public returns (address) {
         return createClone(scheduledTxCore);
     }
-
-    event NewScheduledTransaction(address tx, address indexed creator);
-    event Params(
-        address recip,
-        uint256 val,
-        uint256 ga,
-        uint256 gp,
-        uint256 ews,
-        uint256 ewl,
-        uint256 b,
-        uint256 f
-    );
 }
