@@ -63,8 +63,8 @@ contract("Scheduler", (accounts) => {
         const tx = await scheduler.schedule(encoded)
 
         // find the logs containing the newly scheduled contract
-        const newTx = tx.logs.find(log => log.event === 'NewScheduledTransaction')
-        const newTxAddr = newTx.args.tx
+        const newTx = tx.logs.find(log => log.event === 'NewTransactionScheduled')
+        const newTxAddr = newTx.args.newTransaction
 
         // init the ScheduledTransaction wrapper on this address
         const n = await ScheduledTransaction.at(newTxAddr)

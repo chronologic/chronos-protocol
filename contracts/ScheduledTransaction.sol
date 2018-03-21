@@ -4,6 +4,9 @@ import "./IPFS.sol";
 
 contract ScheduledTransaction {
     bytes32 public ipfsHash;
+
+    address owner = 0x0;
+    bool initialized = false;
     
     // will switch to true when claimed
     bool claimed = false;
@@ -18,8 +21,10 @@ contract ScheduledTransaction {
     // disallow receiving ether
     function() public {revert();}
 
-    function init(bytes32 _ipfsHash) public payable {
+    function init(bytes32 _ipfsHash, address _owner) public payable {
         ipfsHash = _ipfsHash;
+        owner = _owner;
+        initialized = true;
     }
 
     function execute(bytes _serializedTransaction)
@@ -52,7 +57,7 @@ contract ScheduledTransaction {
         bytes32 callData = "";
 
         //check gasleft() >= requiredGas
-        require(gasleft() >= callGas + 180000 - 25000);
+        require(msg.gas >= callGas + 180000 - 25000);
         //check that this hasn't been executed yet
         require(!executed);
         //check in execution window
@@ -85,6 +90,7 @@ contract ScheduledTransaction {
         public returns (bool)
     {
         // check if msg.sender == owner
+        require(msg.sender == owner);
         return true;
     }
 

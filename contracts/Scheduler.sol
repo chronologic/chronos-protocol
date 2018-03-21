@@ -19,12 +19,10 @@ contract Scheduler is CloneFactory, EventEmitter {
         scheduledTxCore = _scheduledTxCore;
     }
 
-    event DEBUG(bytes __B);
-
     function schedule(bytes _serializedParams) 
         public payable returns (address scheduledTx)
     {
-        DEBUG(_serializedParams);
+        // DEBUG(_serializedParams);
         // Deploy the ScheduledTransaction contract
 
         address recipient;
@@ -64,17 +62,17 @@ contract Scheduler is CloneFactory, EventEmitter {
         // require(msg.value >= endowment);
 
         bytes32 ipfsHash = IPFS(ipfs).generateHash(string(_serializedParams));
-        DEBUG2(ipfsHash);
+        // DEBUG2(ipfsHash);
         scheduledTx = createTransaction();
         require(scheduledTx != 0x0);
 
-        ScheduledTransaction(scheduledTx).init.value(msg.value)(ipfsHash);
+        ScheduledTransaction(scheduledTx).init.value(msg.value)(ipfsHash, msg.sender);
         // Store in the request tracker
         logNewTransactionScheduled(scheduledTx, msg.sender);
     }
 
+    event DEBUG(bytes __B);
     event DEBUG2(bytes32 _part);
-
 
     function createTransaction() public returns (address) {
         return createClone(scheduledTxCore);

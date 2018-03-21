@@ -19,7 +19,7 @@ contract EventEmitter {
     )
         public
     {
-        emit NewTransactionScheduled(_newTransaction, _scheduledBy);
+        NewTransactionScheduled(_newTransaction, _scheduledBy);
     }
 
     function logParameters(
@@ -34,6 +34,6 @@ contract EventEmitter {
     )
         public
     {
-        emit Parameters(_recipient, _value, _callGas, _gasPrice, _executionWindowStart, _executionWindowLength, _bounty, _fee);
+        Parameters(_recipient, _value, _callGas, _gasPrice, _executionWindowStart, _executionWindowLength, _bounty, _fee);
     }
 }
