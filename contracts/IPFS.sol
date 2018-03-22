@@ -19,15 +19,15 @@ contract IPFS {
     bytes constant LengthPrefix = hex"20";
     bytes constant ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
 
-    function generateHash(string _data) 
+    function generateHash(bytes _data) 
         public constant returns (bytes32 sha256HashOfData)//(bytes b58Hash)
     {
         // Convert the string to bytes explicitly.
-        bytes memory data = bytes(_data);
+        // bytes memory data = _data;
         //
-        bytes memory len1 = lengthEncode(data.length);
-        bytes memory len2 = lengthEncode(data.length + 4 + 2*len1.length);
-        return sha256(Prefix1, len2, Prefix2, len1, data, Postfix, len1);
+        bytes memory len1 = lengthEncode(_data.length);
+        bytes memory len2 = lengthEncode(_data.length + 4 + 2*len1.length);
+        return sha256(Prefix1, len2, Prefix2, len1, _data, Postfix, len1);
         // return concat(concat(Sha256MultiHashPrefix, LengthPrefix), toBytes(sha256(Prefix1, len2, Prefix2, len1, data, Postfix, len1)));
         // return base58(concat(concat(Sha256MultiHashPrefix, LengthPrefix), toBytes(sha256(
         //     Prefix1, len2, Prefix2, len1, data, Postfix, len1

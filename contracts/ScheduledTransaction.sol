@@ -40,14 +40,18 @@ contract ScheduledTransaction {
         initialized = true;
     }
 
+    function checkHash(bytes _s)
+        public constant returns (bool)
+    {
+        bytes32 checkHash = IPFS(Scheduler(scheduledFrom).ipfs()).generateHash(_s);
+        return checkHash == ipfsHash;
+    }
+
     function execute(bytes _serializedTransaction)
         public returns (bool)
     {
         uint256 startGas = msg.gas;
-        
-        // address ipfs = Scheduler(scheduledFrom).ipfs();
-        // bytes32 checkHash = IPFS(ipfs).generateHash(string(_serializedTransaction));
-        // require(checkHash == ipfsHash);
+        require(checkHash(_serializedTransaction));
 
         address recipient;
         uint256 value;

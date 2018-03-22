@@ -25,7 +25,7 @@ contract Scheduler is CloneFactory {
         scheduledTxCore = _scheduledTxCore;
     }
 
-    function schedule(bytes _serializedParams) 
+    function schedule(bytes _serializedTransaction) 
         public payable returns (address scheduledTx)
     {
         address recipient;
@@ -39,14 +39,14 @@ contract Scheduler is CloneFactory {
         // No requiredDeposit - Use Day Token now
 
         assembly {
-            recipient := mload(add(_serializedParams, 32))
-            value := mload(add(_serializedParams,64))
-            callGas := mload(add(_serializedParams, 96))
-            gasPrice := mload(add(_serializedParams, 128))
-            executionWindowStart := mload(add(_serializedParams, 160))
-            executionWindowLength := mload(add(_serializedParams, 192))
-            bounty := mload(add(_serializedParams, 224))
-            fee := mload(add(_serializedParams, 256))
+            recipient := mload(add(_serializedTransaction, 32))
+            value := mload(add(_serializedTransaction,64))
+            callGas := mload(add(_serializedTransaction, 96))
+            gasPrice := mload(add(_serializedTransaction, 128))
+            executionWindowStart := mload(add(_serializedTransaction, 160))
+            executionWindowLength := mload(add(_serializedTransaction, 192))
+            bounty := mload(add(_serializedTransaction, 224))
+            fee := mload(add(_serializedTransaction, 256))
             // CallData = everything after this
         }
 
@@ -64,7 +64,7 @@ contract Scheduler is CloneFactory {
         // uint endowment = value + callGas * gasPrice + bounty + fee;
         // require(msg.value >= endowment);
 
-        bytes32 ipfsHash = IPFS(ipfs).generateHash(string(_serializedParams));
+        bytes32 ipfsHash = IPFS(ipfs).generateHash(_serializedTransaction);
 
         scheduledTx = createTransaction();
         require(scheduledTx != 0x0);
