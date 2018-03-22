@@ -65,6 +65,7 @@ contract("Scheduler", (accounts) => {
 
         // schedule a call using the same encoded hex string
         const tx = await scheduler.schedule(encoded)
+
         const getEvent = () => {
             return new Promise(resolve => {
                 eventEmitter.allEvents().get((err,res) => {
@@ -100,7 +101,7 @@ contract("Scheduler", (accounts) => {
         assert(encoded === data)
 
         console.log(encoded)
-        console.log(data)
+        // console.log(data)
     })
 
     after(async() => {

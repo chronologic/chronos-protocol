@@ -40,6 +40,9 @@ contract ScheduledTransaction {
     function execute(bytes _serializedTransaction)
         public returns (bool)
     {
+        uint256 startGas = msg.gas;
+        
+        // address ipfs = Scheduler(scheduledFrom).ipfs();
         // bytes32 checkHash = IPFS(ipfs).generateHash(string(_serializedTransaction));
         // require(checkHash == ipfsHash);
 
@@ -66,35 +69,36 @@ contract ScheduledTransaction {
 
         bytes32 callData = "";
 
-        //check gasleft() >= requiredGas
+        // check gasleft() >= requiredGas
         require(msg.gas >= callGas + 180000 - 25000);
-        //check that this hasn't been executed yet
+        // check that this hasn't been executed yet
         require(!executed);
-        //check in execution window
+        // check in execution window
         require(block.number >= executionWindowStart && block.number < executionWindowStart + executionWindowLength);
-        //if claimed, check that claimer is executed
+        // if claimed, check that claimer is executed
         if (claimed && block.number < executionWindowStart + executionWindowLength / 2) {
             require(msg.sender == claimingNode);
         }
-        //check gasPrice
+        // check gasPrice
         require(tx.gasprice == gasPrice);
 
-        //mark that this has been executed
+        // mark that this has been executed
         executed = true;
 
         successful = recipient.call.value(value).gas(callGas)(callData);
 
-        //check bounty recipient, send bounty
+        // check bounty recipient, send bounty
         address bountyRecipient = msg.sender;
         bountyRecipient.transfer(bounty);
 
-        //check fee recipient, send fee
+        //  check fee recipient, send fee
         address feeRecipient = Scheduler(scheduledFrom).feeRecipient();
         if (feeRecipient != 0x0) {
             feeRecipient.transfer(fee);
         }
         
-        //send remaining ether back to scheduler
+        // send remaining ether back to scheduler
+        owner.transfer(address(this).balance); //todo more checks on this
 
         return true;
     }
@@ -102,6 +106,10 @@ contract ScheduledTransaction {
     function cancel()
         public returns (bool)
     {
+        uint256 startGas = msg.gas;
+
+
+
         // check if msg.sender == owner
         require(msg.sender == owner);
         return true;
@@ -116,8 +124,8 @@ contract ScheduledTransaction {
     function proxy(address _to, bytes _data)
         public payable returns (bool)
     {
-        // require(msg.sender == owner);
-        // require(isAfterWindow)
+        require(msg.sender == owner);
+        require(executed); // make sure this is the only check we need
         return _to.call.value(msg.value)(_data);
     }
 
