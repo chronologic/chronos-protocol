@@ -22,6 +22,9 @@ contract ScheduledTransaction {
     // will switch to true if successful
     bool successful = false;
 
+    // will switch to true if cancelled
+    bool cancelled = false;
+
     // disallow receiving ether
     function() public {revert();}
 
@@ -106,20 +109,21 @@ contract ScheduledTransaction {
     function cancel()
         public returns (bool)
     {
-        uint256 startGas = msg.gas;
-
-
-
         // check if msg.sender == owner
         require(msg.sender == owner);
+        require(initialized);
+        require(!cancelled);
+        require(!executed);
+        cancelled = true;
+        owner.transfer(address(this).balance);
         return true;
     }
 
-    function claim()
-        public returns (bool)
-    {
-        return true;
-    }
+    // function claim()
+    //     public returns (bool)
+    // {
+    //     return true;
+    // }
 
     function proxy(address _to, bytes _data)
         public payable returns (bool)
