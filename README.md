@@ -2,6 +2,9 @@
 
 ![](eacv2.png)
 
+### FAQ
+[How does this use IPFS?](ipfs.txt)
+
 ### TODOs
  - [ ] write blog
  - [ ] add temporalUnit into encoding

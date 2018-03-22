@@ -1,0 +1,30 @@
+How does this use IPFS?
+-----------------------
+
+The interplanetary filesystem (IPFS) is a distributed and decentralized key-value store
+where content is hashed and identified by the base58-bitcoin encoded hash as a key to access
+that content. 
+
+The EAC-v2 uses IPFS to store the transaction data so that we only have to keep the
+hash of the content on chain thereby saving us a gigantic amount in gas costs. 
+
+It works like this:
+    1) User who wants to schedule a transaction prepares the parameters.
+    2) The parameters are serialized into a standard format and sent to the 
+       Scheduler contract on chain.
+    3) The Scheduled contract deploys a new ScheduledTransaction contract 
+       and stores the hash of the serialized parameters. We hash the serialized 
+       paramters with `sha256` the same hashing algo that IPFS uses.
+    4) The EventEmitter emits an event poiting to the address on the Ethereum
+       blockchain of the newly deployed ScheduledTransaction. It can read the 
+       storage of this contract for the relevant ipfs hash then recreate
+       the correctly encoded key to find the transaction data on IPFS.
+    5) The TimeNode accesses the data on IPFS and stores it locally on its
+       own IPFS node, thereby increasing the decentralization of the data.
+    6) On execution time (a parameter time node will read when it accesses
+       the data for the first time) the TimeNode calls `execute()` on the
+       ScheduledTransaction contract.
+
+Notes: Because TimeNodes are incentivized to run via the `bounty`, we are 
+also incentivizing them to be storing the relevant data to them and contribute
+to the decentralization of the IPFS network.
