@@ -50,7 +50,7 @@ contract ScheduledTransaction {
     function execute(bytes _serializedTransaction)
         public returns (bool)
     {
-        uint256 startGas = msg.gas;
+        // uint256 startGas = msg.gas;
         require(checkHash(_serializedTransaction));
 
         address recipient;
