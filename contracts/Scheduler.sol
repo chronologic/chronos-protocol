@@ -28,23 +28,23 @@ contract Scheduler is CloneFactory {
     function schedule(bytes _serializedTransaction) 
         public payable returns (address scheduledTx)
     {
-        address recipient;
+        // address recipient;
         uint256 value;
         uint256 callGas;
         uint256 gasPrice;
-        uint256 executionWindowStart;
-        uint256 executionWindowLength;
+        // uint256 executionWindowStart;
+        // uint256 executionWindowLength;
         uint256 bounty;
         uint256 fee;
         // No requiredDeposit - Use Day Token now
 
         assembly {
-            recipient := mload(add(_serializedTransaction, 32))
+            // recipient := mload(add(_serializedTransaction, 32))
             value := mload(add(_serializedTransaction,64))
             callGas := mload(add(_serializedTransaction, 96))
             gasPrice := mload(add(_serializedTransaction, 128))
-            executionWindowStart := mload(add(_serializedTransaction, 160))
-            executionWindowLength := mload(add(_serializedTransaction, 192))
+            // executionWindowStart := mload(add(_serializedTransaction, 160))
+            // executionWindowLength := mload(add(_serializedTransaction, 192))
             bounty := mload(add(_serializedTransaction, 224))
             fee := mload(add(_serializedTransaction, 256))
             // CallData = everything after this

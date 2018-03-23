@@ -9,6 +9,8 @@ const Serializer = require('../scripts/serializeTransaction')
 const b58 = require('base-58')
 const { waitUntilBlock } = require('@digix/tempo')(web3)
 
+const expect = require('chai').expect
+
 contract('ScheduledTransaction', (accounts) => {
     let eventEmitter
     let ipfs
@@ -132,8 +134,9 @@ contract('ScheduledTransaction', (accounts) => {
             gas: 3000000
         })
 
-        console.log(a)
-        console.log(await scheduledTransaction.executed())
+        // console.log(a)
+        expect(a.receipt.status).to.equal('0x01')
+        assert(await scheduledTransaction.executed() == true)
 
     })
 

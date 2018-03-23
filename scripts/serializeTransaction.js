@@ -67,13 +67,13 @@ TransactionSerializer.prototype.deserialize = (
     
     const r = {
         recipient: decoded[0],
-        value: decoded[1].toString(),
-        callGas: decoded[2].toString(),
-        gasPrice: decoded[3].toString(),
-        executionWindowStart: decoded[4].toString(),
-        executionWindowLength: decoded[5].toString(),
-        bounty: decoded[6].toString(),
-        fee: decoded[7].toString(),
+        value: decoded[1].toNumber(),
+        callGas: decoded[2].toNumber(),
+        gasPrice: decoded[3].toNumber(),
+        executionWindowStart: decoded[4].toNumber(),
+        executionWindowLength: decoded[5].toNumber(),
+        bounty: decoded[6].toNumber(),
+        fee: decoded[7].toNumber(),
     }
     
     return r
