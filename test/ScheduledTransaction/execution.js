@@ -257,6 +257,46 @@ contract("ScheduledTransaction__execution", (accounts)=> {
         }).should.be.rejectedWith('VM Exception while processing transaction: revert')
     })
 
+    it('fails to execute with the incorrect GasPrice', async() => {
+        const newTransactionAddress = await getLatestNewTransaction()
+        const scheduledTransaction = await ScheduledTransaction.at(newTransactionAddress)
+        
+        // grab the ipfsHash from the contract se we can find the data
+        const ipfsHash = await scheduledTransaction.ipfsHash()
+
+        // the hash is raw, so we need to format it
+        const formattedHash = b58.encode(
+            Buffer.from('1220' + ipfsHash.slice(2), 'hex')
+        )
+
+        // get the data from the ipfsNode
+        const bytes = await ipfsNode.getString(node, formattedHash)
+
+        // convert to hex and add back the '0x'
+        const data = '0x' + bytes.toString('hex')
+        
+        // decode the data so its nice and usable for us in javascript
+        const decoded = serializer.deserialize(data)
+
+        // we go to two blocks before since the "next" block is the one we test
+        await waitUntilBlock(0, decoded.executionWindowStart)
+        expect(await getBlockNumber()).to.equal(parseInt(decoded.executionWindowStart))
+
+        // Too big gasPrice
+        await scheduledTransaction.execute(data, {
+            from: accounts[4],
+            gasPrice: decoded.gasPrice +1,
+            gas: 3000000
+        }).should.be.rejectedWith('VM Exception while processing transaction: revert')
+
+        // Too small gasPrice
+        await scheduledTransaction.execute(data, {
+            from: accounts[4],
+            gasPrice: decoded.gasPrice -1,
+            gas: 3000000
+        }).should.be.rejectedWith('VM Exception while processing transaction: revert')
+    })
+
     after(async() => {
         await ipfsNode.shutdown(node)
     })
