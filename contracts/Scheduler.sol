@@ -61,8 +61,8 @@ contract Scheduler is CloneFactory {
         //     fee
         // );
 
-        // uint endowment = value + callGas * gasPrice + bounty + fee;
-        // require(msg.value >= endowment);
+        uint endowment = value + callGas * gasPrice + bounty + fee;
+        require(msg.value >= endowment);
 
         bytes32 ipfsHash = IPFS(ipfs).generateHash(_serializedTransaction);
 

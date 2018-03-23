@@ -64,7 +64,7 @@ contract("Scheduler", (accounts) => {
         const expectedIpfsHash = await ipfsNode.addString(node, Buffer.from(encoded.slice(2), 'hex'))
 
         // schedule a call using the same encoded hex string
-        const tx = await scheduler.schedule(encoded)
+        const tx = await scheduler.schedule(encoded, {value: 30000})
 
         const getEvent = () => {
             return new Promise(resolve => {
@@ -100,7 +100,7 @@ contract("Scheduler", (accounts) => {
         // now the encoded data should be the same as the data we got back from the contract
         assert(encoded === data)
 
-        console.log(encoded)
+        // console.log(encoded)
         // console.log(data)
     })
 

@@ -7,23 +7,23 @@ contract ScheduledTransaction {
     bytes32 public ipfsHash;
     address public scheduledFrom;
 
-    address owner = 0x0;
+    address public owner = 0x0;
 
     // will switch to true when initialized (prevents re-initialization)
-    bool initialized = false;
+    bool public initialized = false;
     
     // will switch to true when claimed
-    bool claimed = false;
-    address claimingNode = 0x0;
+    bool public claimed = false;
+    address public claimingNode = 0x0;
 
     // will switch to true when executed
-    bool executed = false;
+    bool public executed = false;
 
     // will switch to true if successful
-    bool successful = false;
+    bool public successful = false;
 
     // will switch to true if cancelled
-    bool cancelled = false;
+    bool public cancelled = false;
 
     // disallow receiving ether
     function() public {revert();}

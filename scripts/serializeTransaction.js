@@ -48,7 +48,38 @@ TransactionSerializer.prototype.serialize = (
     return encodedTransaction
 }
 
-const testTransactionSerializer = () => {
+TransactionSerializer.prototype.deserialize = (
+    bytesString
+) => {
+    const decoded = coder.decode(
+        [
+            'address',
+            'uint256',
+            'uint256',
+            'uint256',
+            'uint256',
+            'uint256',
+            'uint256',
+            'uint256',
+        ],
+        bytesString,
+    )
+    
+    const r = {
+        recipient: decoded[0],
+        value: decoded[1].toString(),
+        callGas: decoded[2].toString(),
+        gasPrice: decoded[3].toString(),
+        executionWindowStart: decoded[4].toString(),
+        executionWindowLength: decoded[5].toString(),
+        bounty: decoded[6].toString(),
+        fee: decoded[7].toString(),
+    }
+    
+    return r
+}
+
+const testEncoding = () => {
     const transactionSerializer = new TransactionSerializer()
     const serialized = transactionSerializer.serialize(
         '0x7eD1E469fCb3EE19C0366D829e291451bE638E59',
@@ -61,9 +92,17 @@ const testTransactionSerializer = () => {
         70,
     )
 
-    console.log(serialized)
+    return serialized
 }
 
-// testTransactionSerializer()
+const testDecoding = () => {
+    const transactionSerializer = new TransactionSerializer()
+    const serialized = testEncoding()
+    const deserialized = transactionSerializer.deserialize(serialized)
+    return deserialized
+}
+
+// console.log(testEncoding())
+// console.log(testDecoding())
 
 module.exports = TransactionSerializer
