@@ -1,7 +1,8 @@
 /**
  * This testfile tests all of the invariants of execution of a ScheduledTransaction.
  * It checks that the ScheduledTransaction is only executed inside of its desired
- * execution window and at no other time.
+ * execution window and at no other time. It also tests that the correct gasPrice
+ * is enforced by the contract and no more or less.
  */
 
 /** Contract artifacts */
