@@ -47,12 +47,45 @@ contract ScheduledTransaction {
         return checkHash == ipfsHash;
     }
 
+    function checkInExecutionWindow(
+        uint24 temporalUnit,
+        uint256 executionWindowStart,
+        uint256 executionWindowLength
+    ) private pure returns (bool) {
+        if (temporalUnit == 1) {
+            return (
+                block.number >= executionWindowStart &&
+                block.number < executionWindowStart + executionWindowLength
+            );
+        } else if (temporalUnit == 2) {
+            return (
+                block.timestamp >= executionWindowStart &&
+                block.timestamp < executionWindowStart + executionWindowLength
+            );
+        } else {
+            return false;
+        }
+    }
+
+    function checkIfClaimed(
+        uint24 temporalUnit,
+        uint256 executionWindowStart,
+        uint256 executionWindowLength
+    ) private pure returns (bool) {
+        if (temporalUnit == 1) {
+            return block.number < executionWindowStart + executionWindowLength /2;
+        } else if (temporalUnit == 2) {
+            return block.timestamp < executionWindowStart + executionWindowLength /2;
+        } else { return false; }
+    }
+
     function execute(bytes _serializedTransaction)
         public returns (bool)
     {
         // uint256 startGas = msg.gas;
         require(checkHash(_serializedTransaction));
 
+        uint24 temporalUnit;
         address recipient;
         uint256 value;
         uint256 callGas;
@@ -63,14 +96,15 @@ contract ScheduledTransaction {
         uint256 fee;
 
         assembly {
-            recipient := mload(add(_serializedTransaction, 32))
-            value := mload(add(_serializedTransaction,64))
-            callGas := mload(add(_serializedTransaction, 96))
-            gasPrice := mload(add(_serializedTransaction, 128))
-            executionWindowStart := mload(add(_serializedTransaction, 160))
-            executionWindowLength := mload(add(_serializedTransaction, 192))
-            bounty := mload(add(_serializedTransaction, 224))
-            fee := mload(add(_serializedTransaction, 256))
+            temporalUnit := mload(add(_serializedTransaction, 32))
+            recipient := mload(add(_serializedTransaction, 34))
+            value := mload(add(_serializedTransaction,66))
+            callGas := mload(add(_serializedTransaction, 98))
+            gasPrice := mload(add(_serializedTransaction, 130))
+            executionWindowStart := mload(add(_serializedTransaction, 162))
+            executionWindowLength := mload(add(_serializedTransaction, 194))
+            bounty := mload(add(_serializedTransaction, 226))
+            fee := mload(add(_serializedTransaction, 258))
             // CallData = everything after this
         }
 
@@ -81,8 +115,24 @@ contract ScheduledTransaction {
         // check that this hasn't been executed yet
         require(!executed);
         // check in execution window
-        require(block.number >= executionWindowStart && block.number < executionWindowStart + executionWindowLength);
-        // if claimed, check that claimer is executed
+        require(
+            checkInExecutionWindow(
+                temporalUnit, 
+                executionWindowStart, 
+                executionWindowLength
+            )
+        );
+        // if claimed, check that claimer is executing
+        if (claimed && msg.sender != claimingNode) {
+            require(
+                checkIfClaimed(
+                    temporalUnit,
+                    executionWindowStart,
+                    executionWindowLength
+                )
+            );
+        }
+        // checkIfClaimed(temporalUnit, executionWindowStart, executionWindowLength)
         if (claimed && block.number < executionWindowStart + executionWindowLength / 2) {
             require(msg.sender == claimingNode);
         }

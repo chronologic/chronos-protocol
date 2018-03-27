@@ -14,6 +14,7 @@ const TransactionSerializer = function () {}
  * Uint256 - Fee
  */
 TransactionSerializer.prototype.serialize = (
+    temporalUnit,
     recipientAddress,
     value,
     callGas,
@@ -45,7 +46,8 @@ TransactionSerializer.prototype.serialize = (
             fee,
         ]
     )
-    return encodedTransaction
+    const temporalUnitEncoded = temporalUnit == 1 ? '0001' : '0002'
+    return '0x' + temporalUnitEncoded + encodedTransaction.slice(2)
 }
 
 TransactionSerializer.prototype.deserialize = (
@@ -62,10 +64,13 @@ TransactionSerializer.prototype.deserialize = (
             'uint256',
             'uint256',
         ],
-        bytesString,
+        '0x' + bytesString.slice(6), // take off the temporal unit
     )
+
+    const decodedTemporalUnit = bytesString.slice(2, 6) == '0001' ? 1 : 2
     
     const r = {
+        temporalUnit: decodedTemporalUnit,
         recipient: decoded[0],
         value: decoded[1].toNumber(),
         callGas: decoded[2].toNumber(),
@@ -82,6 +87,7 @@ TransactionSerializer.prototype.deserialize = (
 const testEncoding = () => {
     const transactionSerializer = new TransactionSerializer()
     const serialized = transactionSerializer.serialize(
+        2,
         '0x7eD1E469fCb3EE19C0366D829e291451bE638E59',
         10,
         20,
@@ -103,6 +109,6 @@ const testDecoding = () => {
 }
 
 // console.log(testEncoding())
-// console.log(testDecoding())
+console.log(testDecoding())
 
 module.exports = TransactionSerializer
