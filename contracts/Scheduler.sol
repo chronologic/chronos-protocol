@@ -40,7 +40,7 @@ contract Scheduler is CloneFactory {
 
         assembly {
             // recipient := mload(add(_serializedTransaction, 32))
-            value := mload(add(_serializedTransaction,64))
+            value := mload(add(_serializedTransaction, 64))
             callGas := mload(add(_serializedTransaction, 96))
             gasPrice := mload(add(_serializedTransaction, 128))
             // executionWindowStart := mload(add(_serializedTransaction, 160))

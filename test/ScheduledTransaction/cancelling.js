@@ -12,6 +12,8 @@ const ScheduledTransaction = artifacts.require('ScheduledTransaction.sol')
 /** Helper Scripts */
 const ipfsNode = require('../../scripts/ipfsNode')
 const Serializer = require('../../scripts/serializeTransaction')
+const { scheduledTransactionDirectDeploy,
+        getBlockNumber } = require('./helpers')
 
 /** Third party imports */
 const b58 = require('base-58')
@@ -24,26 +26,57 @@ const { expect } = require('chai')
 /** Tests */
 contract("ScheduledTransaction__cancelling", (accounts) => {
 
-    // serializer
-    const serializer = new Serializer()
+    it("Allows cancelling before the transaction has been executed", async() => {
+        const blockNum = await getBlockNumber() + 30
+        const { scheduledTransaction } = await scheduledTransactionDirectDeploy({
+            executionWindowStart: blockNum,
+            owner: accounts[5],
+        })
 
-    const scheduledTransactionDirectDeploy = async(opts) => {
-        const sTx = await ScheduledTransaction.new()
-        const input = serializer.serialize(
-            opts.recipient || '0x0',
-            opts.value || 0,
-            opts.callGas || 0,
-            opts.gasPrice || 0,
-            opts.executionWindowStart || 0,
-            opts.executionWindowLength || 0,
-            opts.bounty || 0,
-            opts.fee || 0,
-        )
+        const cancelTx = await scheduledTransaction.cancel({
+            from: accounts[5]
+        })
 
-        const ipfs = await IPFS.new()
-        const ipfsHash = await ipfs.generateHash(input.slice(2))
+        // TODO store the serialized bytes in the scheduledTransaction object, or as a return value
+        // await scheduledTransaction.execute({
+        //     from: accounts[7]
+        // }).should.be.rejectedWith('VM Exception while processing transaction: revert')
+    })
 
-        await sTx.init(ipfsHash, opts.owner || '0x0', opts.schedulerFrom || '0x0')
-        return sTx
-    }
+    it("Does not allow cancelling after the transaction has been executed", async() => {
+        const blockNum = await getBlockNumber() + 30
+
+        const callGas = 30
+        const gasPrice = 40
+        const value = 50
+        
+        // const { scheduledTransaction, serializedBytes } = await scheduledTransactionDirectDeploy({
+        //     executionWindowStart: blockNum + 30,
+        //     owner: accounts[5],
+        //     gas: callGas,
+        //     gasPrice,
+        //     value,
+        // })
+
+        // await waitUntilBlock(
+        //     0,
+        //     blockNum + 31
+        // )
+
+        // const tx = await scheduledTransaction.execute(serializedBytes, {
+        //     from: accounts[7],
+        //     gas: callGas,
+        //     gasPrice,
+        // })
+
+
+    })
+
+    it("Does not allow cancelling if already cancelled", async() => {
+        
+    })
+
+    it("Does not allow cancelling if by anyone other than owner", async() => {
+        
+    })
 })
