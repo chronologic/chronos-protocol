@@ -50,6 +50,7 @@ contract("Scheduler", (accounts) => {
 
         // serialize params
         const encoded = serializer.serialize(
+            1,
             recipient,
             value,
             callGas,

@@ -48,10 +48,10 @@ contract ScheduledTransaction {
     }
 
     function checkInExecutionWindow(
-        uint24 temporalUnit,
+        bytes2 temporalUnit,
         uint256 executionWindowStart,
         uint256 executionWindowLength
-    ) private pure returns (bool) {
+    ) private view returns (bool) {
         if (temporalUnit == 1) {
             return (
                 block.number >= executionWindowStart &&
@@ -68,10 +68,10 @@ contract ScheduledTransaction {
     }
 
     function checkIfClaimed(
-        uint24 temporalUnit,
+        bytes2 temporalUnit,
         uint256 executionWindowStart,
         uint256 executionWindowLength
-    ) private pure returns (bool) {
+    ) private view returns (bool) {
         if (temporalUnit == 1) {
             return block.number < executionWindowStart + executionWindowLength /2;
         } else if (temporalUnit == 2) {
@@ -85,7 +85,7 @@ contract ScheduledTransaction {
         // uint256 startGas = msg.gas;
         require(checkHash(_serializedTransaction));
 
-        uint24 temporalUnit;
+        bytes2 temporalUnit;
         address recipient;
         uint256 value;
         uint256 callGas;

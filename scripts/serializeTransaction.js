@@ -109,6 +109,6 @@ const testDecoding = () => {
 }
 
 // console.log(testEncoding())
-console.log(testDecoding())
+// console.log(testDecoding())
 
 module.exports = TransactionSerializer

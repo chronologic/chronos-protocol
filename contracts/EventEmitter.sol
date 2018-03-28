@@ -3,6 +3,7 @@ pragma solidity ^0.4.19;
 contract EventEmitter {
     event NewTransactionScheduled(address newTransaction, address indexed scheduledBy, address indexed scheduledFrom);
     // event Parameters(
+    //     bytes2 temporalUnit,
     //     address recipient,
     //     uint256 value,
     //     uint256 callGas,
@@ -24,6 +25,7 @@ contract EventEmitter {
     }
 
     // function logParameters(
+    //     bytes2 _temporalUnit,
     //     address _recipient,
     //     uint256 _value,
     //     uint256 _callGas,
@@ -35,6 +37,6 @@ contract EventEmitter {
     // )
     //     public
     // {
-    //     Parameters(_recipient, _value, _callGas, _gasPrice, _executionWindowStart, _executionWindowLength, _bounty, _fee);
+    //     Parameters(_temporalUnit, _recipient, _value, _callGas, _gasPrice, _executionWindowStart, _executionWindowLength, _bounty, _fee);
     // }
 }

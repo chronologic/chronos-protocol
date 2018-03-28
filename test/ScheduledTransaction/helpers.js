@@ -8,6 +8,7 @@ const scheduledTransactionDirectDeploy = async(opts) => {
 
     const sTx = await ScheduledTransaction.new()
     const input = serializer.serialize(
+        opts.temporalUnit || 1,
         opts.recipient || '0x17B17026C423a988C3D1375252C3021ff32F354C',
         opts.value || 0,
         opts.callGas || 0,

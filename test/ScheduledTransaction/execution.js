@@ -98,6 +98,7 @@ contract("ScheduledTransaction__execution", (accounts)=> {
 
         // serialize the params
         const serializedParams = serializer.serialize(
+            1,
             recipient,
             value,
             callGas,
@@ -146,6 +147,7 @@ contract("ScheduledTransaction__execution", (accounts)=> {
         
         // decode the data so its nice and usable for us in javascript
         const decoded = serializer.deserialize(data)
+
 
         // we go to two blocks before since the "next" block is the one we test
         await waitUntilBlock(0, decoded.executionWindowStart -2)

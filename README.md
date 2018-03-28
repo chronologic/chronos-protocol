@@ -7,7 +7,7 @@
 
 ### TODOs
  - [ ] write blog
- - [ ] add temporalUnit into encoding
+ - [X] add temporalUnit into encoding
  - [ ] document encoding
  - [ ] document IPFS use
  - [ ] Fix timenode to run IPFS node and read serialization
