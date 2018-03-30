@@ -62,9 +62,7 @@ contract ScheduledTransaction {
                 block.timestamp >= executionWindowStart &&
                 block.timestamp < executionWindowStart + executionWindowLength
             );
-        } else {
-            return false;
-        }
+        } else { return false; }
     }
 
     function checkIfClaimed(

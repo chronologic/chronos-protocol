@@ -1,0 +1,29 @@
+The encoded parameters that will be sent to the scheduler 
+smart contract and stored in IPFS looks like this:
+
+```
+0x00020000000000000000000000007ed1e469fcb3ee19c0366d829e291451be638e59000000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000014000000000000000000000000000000000000000000000000000000000000001e00000000000000000000000000000000000000000000000000000000000000280000000000000000000000000000000000000000000000000000000000000032000000000000000000000000000000000000000000000000000000000000003c0000000000000000000000000000000000000000000000000000000000000046
+```
+
+The first two bytes are the temporalUnit which must
+be either `0001` or `0002` and stands for the unit which 
+was used to set the parameters for this transaction. If 
+the first two bytes are `0001` then the parameters
+will be parsed as _block number_ otherwise if the 
+first two bytes are `0002` the parameters will be parsed 
+to refer to _unix epoch timestamps_ as they are recorded in 
+Ethereum blocks.
+
+Following that the rest of the bytes are simply the 
+ABI encoding of the parameters that will be sent, in order.
+
+(bytes 1 - 2   - temporalUnit)
+bytes   3 -  34  -  recipient
+bytes  35 -  66  -  value
+bytes  67 -  98  -  callGas
+bytes  99 - 130  -  gasPrice
+bytes 131 - 162  -  executionWindowStart
+bytes 163 - 194  -  executionWindowLength
+bytes 195 - 226  -  bounty
+bytes 227 - 258  -  fee 
+bytes 259 - ...  -  callData
