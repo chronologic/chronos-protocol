@@ -90,32 +90,4 @@ contract Scheduler is CloneFactory {
     function createTransaction() public returns (address) {
         return createClone(scheduledTxCore);
     }
-
-    function toBytes(uint256 _ptr, uint256 _len) internal view returns (bytes) {
-        bytes memory ret = new bytes(_len);
-        uint retptr;
-        assembly { retptr := add(ret, 32) }
-
-        memcpy(retptr, _ptr, _len);
-        return ret;
-    }
-
-    function memcpy(uint256 dest, uint src, uint len) private pure {
-        // Copy word-length chunks while possible
-        for(; len >= 32; len -= 32) {
-            assembly {
-                mstore(dest, mload(src))
-            }
-            dest += 32;
-            src += 32;
-        }
- 
-        // Copy remaining bytes
-        uint mask = 256 ** (32 - len) - 1;
-        assembly {
-            let srcpart := and(mload(src), not(mask))
-            let destpart := and(mload(dest), mask)
-            mstore(dest, or(destpart, srcpart))
-        }
-    }
 }

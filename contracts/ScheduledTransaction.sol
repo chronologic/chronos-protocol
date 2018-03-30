@@ -1,5 +1,6 @@
 pragma solidity ^0.4.19;
 
+import "./BytesLib.sol";
 import "./IPFS.sol";
 import "./Scheduler.sol";
 
@@ -103,10 +104,9 @@ contract ScheduledTransaction {
             executionWindowLength := mload(add(_serializedTransaction, 194))
             bounty := mload(add(_serializedTransaction, 226))
             fee := mload(add(_serializedTransaction, 258))
-            // CallData = everything after this
         }
 
-        bytes32 callData = "";
+        bytes memory callData = getCallData(_serializedTransaction);
 
         // check gasleft() >= requiredGas
         require(msg.gas >= callGas + 180000 - 25000);
@@ -156,6 +156,46 @@ contract ScheduledTransaction {
         owner.transfer(address(this).balance); //todo more checks on this
 
         return true;
+    }
+
+    function getCallData(bytes _serializedTransaction)
+        private view returns (bytes)
+    {
+        uint256 callDataLen;
+        uint256 callDataLoc;
+        assembly {
+            callDataLen := mload(add(_serializedTransaction, 322))
+            callDataLoc := add(_serializedTransaction, 354)
+        }
+        return toBytes(callDataLoc, callDataLen);
+    }
+
+    function toBytes(uint256 _ptr, uint256 _len) internal view returns (bytes) {
+        bytes memory ret = new bytes(_len);
+        uint retptr;
+        assembly { retptr := add(ret, 32) }
+
+        memcpy(retptr, _ptr, _len);
+        return ret;
+    }
+
+    function memcpy(uint256 dest, uint src, uint len) private pure {
+        // Copy word-length chunks while possible
+        for(; len >= 32; len -= 32) {
+            assembly {
+                mstore(dest, mload(src))
+            }
+            dest += 32;
+            src += 32;
+        }
+ 
+        // Copy remaining bytes
+        uint mask = 256 ** (32 - len) - 1;
+        assembly {
+            let srcpart := and(mload(src), not(mask))
+            let destpart := and(mload(dest), mask)
+            mstore(dest, or(destpart, srcpart))
+        }
     }
 
     function cancel()
