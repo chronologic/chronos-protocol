@@ -9,7 +9,7 @@
 ### TODOs
  - [ ] write blog
  - [X] add temporalUnit into encoding
- - [ ] document encoding
+ - [X] document encoding
  - [X] document IPFS use
  - [ ] Fix timenode to run IPFS node and read serialization
  - [ ] Claiming mechanism (using DAY ?) - to be determined

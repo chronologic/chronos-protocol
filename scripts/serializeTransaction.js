@@ -23,6 +23,7 @@ TransactionSerializer.prototype.serialize = (
     executionWindowLength,
     bounty,
     fee,
+    callData,
 ) => {
     const encodedTransaction = coder.encode(
         [
@@ -34,6 +35,7 @@ TransactionSerializer.prototype.serialize = (
             'uint256',
             'uint256',
             'uint256',
+            'bytes',
         ],
         [
             recipientAddress,
@@ -44,6 +46,7 @@ TransactionSerializer.prototype.serialize = (
             executionWindowLength,
             bounty,
             fee,
+            callData,
         ]
     )
     const temporalUnitEncoded = temporalUnit == 1 ? '0001' : '0002'
@@ -84,7 +87,24 @@ TransactionSerializer.prototype.deserialize = (
     return r
 }
 
-const testEncoding = () => {
+// const testEncoding = () => {
+//     const transactionSerializer = new TransactionSerializer()
+//     const serialized = transactionSerializer.serialize(
+//         2,
+//         '0x7eD1E469fCb3EE19C0366D829e291451bE638E59',
+//         10,
+//         20,
+//         30,
+//         40,
+//         50,
+//         60,
+//         70,
+//     )
+
+//     return serialized
+// }
+
+const testEncodingWithShortCallData = () => {
     const transactionSerializer = new TransactionSerializer()
     const serialized = transactionSerializer.serialize(
         2,
@@ -96,6 +116,25 @@ const testEncoding = () => {
         50,
         60,
         70,
+        '0x12341234'
+    )
+
+    return serialized
+}
+
+const testEncodingWithLongCallData = () => {
+    const transactionSerializer = new TransactionSerializer()
+    const serialized = transactionSerializer.serialize(
+        2,
+        '0x7eD1E469fCb3EE19C0366D829e291451bE638E59',
+        10,
+        20,
+        30,
+        40,
+        50,
+        60,
+        70,
+        '0x' + '69123477'.repeat(20)
     )
 
     return serialized
@@ -108,7 +147,8 @@ const testDecoding = () => {
     return deserialized
 }
 
-// console.log(testEncoding())
+// console.log(testEncodingWithShortCallData())
+// console.log(testEncodingWithLongCallData())
 // console.log(testDecoding())
 
 module.exports = TransactionSerializer
