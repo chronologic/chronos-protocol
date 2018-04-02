@@ -58,7 +58,7 @@ contract ClaimingPool {
         uint256 _dayTokens,
         uint256 _totalSupply
     )
-        private pure returns (uint256)
+        public pure returns (uint256)
     {
         // Changes the range to 2 - 40.
         return ((_dayTokens * 38) / _totalSupply) + 2;
@@ -82,6 +82,6 @@ contract ClaimingPool {
         require(slashedDay > 0);
         uint256 amt = slashedDay;
         delete slashedDay;
-        dayToken.transfer(operator, am);
+        dayToken.transfer(operator, amt);
     }
 }
