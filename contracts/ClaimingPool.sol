@@ -13,10 +13,14 @@ contract ClaimingPool {
 
     mapping (address => Deposit) deposits;
 
-    address operator;
+    // Operator of the claiming pool.
+    address public operator;
 
     // Address of the Day Token.
-    DayToken dayToken;
+    DayToken public dayToken;
+
+    // Slashed Day deposits.
+    uint256 public slashedDay;
 
     function ClaimingPool(address _dayTokenAddress) public {
         operator = msg.sender;
@@ -58,5 +62,26 @@ contract ClaimingPool {
     {
         // Changes the range to 2 - 40.
         return ((_dayTokens * 38) / _totalSupply) + 2;
+    }
+
+    function removeTimeNode(address _timeNode)
+        public
+    {
+        // Operator gate for now.
+        require(msg.sender == operator);
+        require(deposits[_timeNode].deposited == true);
+        deposits[_timeNode].deposited = false;
+        slashedDay += 33;
+    }
+
+    function recoverSlashedDay()
+        public 
+    {
+        // Operator gate for now.
+        require(msg.sender == operator);
+        require(slashedDay > 0);
+        uint256 amt = slashedDay;
+        delete slashedDay;
+        dayToken.transfer(operator, am);
     }
 }
