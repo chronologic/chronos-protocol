@@ -84,7 +84,7 @@ contract Scheduler is CloneFactory {
         ScheduledTransaction(scheduledTx).init.value(msg.value)(ipfsHash, msg.sender, address(this));
 
         // Record on the event emitter
-        EventEmitter(eventEmitter).logNewTransactionScheduled(scheduledTx, msg.sender, address(this));
+        EventEmitter(eventEmitter).logNewTransactionScheduled(scheduledTx, msg.sender);
     }
 
     function createTransaction() public returns (address) {

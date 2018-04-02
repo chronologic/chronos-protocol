@@ -17,12 +17,11 @@ contract EventEmitter {
 
     function logNewTransactionScheduled(
         address _newTransaction,
-        address _scheduledBy,
-        address _scheduledFrom
+        address _scheduledBy
     )
         public
     {
-        NewTransactionScheduled(_newTransaction, _scheduledBy, _scheduledFrom);
+        NewTransactionScheduled(_newTransaction, _scheduledBy, msg.sender);
     }
 
     function logParameters(

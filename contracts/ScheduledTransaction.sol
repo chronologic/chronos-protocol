@@ -173,7 +173,7 @@ contract ScheduledTransaction {
     function toBytes(uint256 _ptr, uint256 _len) internal view returns (bytes) {
         bytes memory ret = new bytes(_len);
         uint retptr;
-        assembly { retptr := add(ret, 32) }
+        assembly { retptr := add(ret, 32)  }
 
         memcpy(retptr, _ptr, _len);
         return ret;
