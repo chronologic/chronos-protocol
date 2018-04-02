@@ -109,7 +109,7 @@ contract ScheduledTransaction {
         bytes memory callData = getCallData(_serializedTransaction);
 
         // check gasleft() >= requiredGas
-        require(msg.gas >= callGas + 180000 - 25000);
+        require(gasleft() >= callGas + 180000 - 25000);
         // check that this hasn't been executed yet
         require(!executed);
         // check in execution window
