@@ -21,7 +21,9 @@ contract EventEmitter {
     )
         public
     {
-        NewTransactionScheduled(_newTransaction, _scheduledBy, msg.sender);
+        // This will log the `msg.sender` as the last indexed address so that TimeNodes can filter by where
+        // the event originated from. Tries to mitigate spam attacks.
+        emit NewTransactionScheduled(_newTransaction, _scheduledBy, msg.sender);
     }
 
     function logParameters(
