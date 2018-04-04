@@ -35,7 +35,9 @@ contract ClaimingPool {
         require(dayToken.balanceOf(msg.sender) >= 33);
 
         // Send 33 Day Token to this address.
-        dayToken.transfer(address(this), 33);
+        require(
+            dayToken.transferFrom(msg.sender, address(this), 33)
+        );
         deposits[msg.sender] = Deposit({
             deposited: true,
             lastClaimAt: block.number

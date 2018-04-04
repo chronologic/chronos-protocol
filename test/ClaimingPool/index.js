@@ -32,6 +32,12 @@ contract("ClaimingPool", (accounts) => {
     })
 
     it('allows a deposit of some day', async () => {
-
+        await dayToken.transfer(accounts[6], 60000, {from: accounts[0]})
+        expect((await dayToken.balanceOf(accounts[6])).toNumber()).to.equal(60000)
+        await dayToken.approve(claimingPool.address, 33, {from: accounts[6]})
+        const tx = await claimingPool.depositDay({from: accounts[6]})
+        expect(tx.receipt.status).to.equal('0x01')
+        expect((await dayToken.balanceOf(accounts[6])).toNumber()).to.equal(60000 - 33)
+        expect((await dayToken.balanceOf(claimingPool.address)).toNumber()).to.equal(33)
     })
 })
