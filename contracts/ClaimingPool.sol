@@ -60,10 +60,10 @@ contract ClaimingPool {
         uint256 _dayTokens,
         uint256 _totalSupply
     )
-        public pure returns (uint256)
+        public view returns (uint256)
     {
         // Changes the range to 2 - 40.
-        return ((_dayTokens * 38) / _totalSupply) + 2;
+        return 40 - ((_dayTokens * 38) / _totalSupply);
     }
 
     function removeTimeNode(address _timeNode)
@@ -85,5 +85,11 @@ contract ClaimingPool {
         uint256 amt = slashedDay;
         delete slashedDay;
         dayToken.transfer(operator, amt);
+    }
+
+    function hasDeposited(address _addressToCheck)
+        public view returns (bool)
+    {
+        return deposits[_addressToCheck].deposited;
     }
 }

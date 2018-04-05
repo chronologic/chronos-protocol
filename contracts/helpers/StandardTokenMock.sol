@@ -5,5 +5,6 @@ import "../../chronologic/contracts/StandardToken.sol";
 contract StandardTokenMock is StandardToken {
     function StandardTokenMock() {
         balances[msg.sender] = 1000000;
+        totalSupply = balances[msg.sender];
     }
 }
