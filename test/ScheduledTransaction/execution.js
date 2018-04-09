@@ -126,7 +126,7 @@ contract("ScheduledTransaction__execution", (accounts)=> {
             }
         )
 
-        expect(tx.receipt.status).to.equal('0x01')
+        expect(tx.receipt.status).to.be.oneOf(['0x01', 1])
     })
 
     it('fails to execute before the executionWindowStart', async() => {
@@ -193,7 +193,7 @@ contract("ScheduledTransaction__execution", (accounts)=> {
             gas: 3000000
         })
 
-        expect(tx.receipt.status).to.equal('0x01')
+        expect(tx.receipt.status).to.be.oneOf(['0x01', 1])
     })
 
     it('succeeds to execute at the last block in execution window', async() => {
@@ -227,7 +227,7 @@ contract("ScheduledTransaction__execution", (accounts)=> {
             gas: 3000000
         })
 
-        expect(tx.receipt.status).to.equal('0x01')
+        expect(tx.receipt.status).to.be.oneOf(['0x01', 1])
     })
 
     it('fails to execute after the execution window', async() => {
