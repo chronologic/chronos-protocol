@@ -8,10 +8,12 @@ install:
   - truffle version
   - npm install -g ganache-cli
   - npm install
+  - git submodule init
+  - git submodule update
 script:
   - npm test
 before_script:
   - ganache-cli > /dev/null &
   - sleep 5
-after_script:
-  - npm run coverage && cat coverage/lcov.info | coveralls
+# after_script:
+#   - npm run coverage && cat coverage/lcov.info | coveralls
