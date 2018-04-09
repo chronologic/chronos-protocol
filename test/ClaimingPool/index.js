@@ -1,6 +1,9 @@
 const ClaimingPool = artifacts.require('ClaimingPool.sol')
 const StandardTokenMock = artifacts.require('./helpers/StandardTokenMock.sol')
 
+/** Helpers */
+const { getBlockNumber, scheduledTransactionDirectDeploy } = require('../ScheduledTransaction/helpers')
+
 /** Third party imports */
 const { waitUntilBlock } = require('@digix/tempo')(web3)
 
@@ -55,7 +58,23 @@ contract("ClaimingPool", (accounts) => {
     })
 
     it('DOES NOT allow claim before frequency window opens', async () => {
-        
+        // First schedule a transaction.
+        const curBlockNum = await getBlockNumber()
+        const params = {
+            claimingPool: claimingPool.address,
+            callGas: 3000000,
+            gasPrice: web3.toWei('10', 'gwei'),
+            executionWindowStart: curBlockNum + 60,
+            executionWindowLength: 20,
+            bounty: 20,
+            fee: 30,
+            owner: accounts[5],
+        }
+        const { scheduledTransaction, serializedBytes} = await scheduledTransactionDirectDeploy(params)
+
+        // Should disallow the claim
+        scheduledTransaction.claim({from: accounts[6]}).should.be.rejectedWith('VM Exception while processing transaction: revert')
+
     })
 
     it('DOES allow claim after frequency window opens', async () => {
@@ -67,7 +86,7 @@ contract("ClaimingPool", (accounts) => {
     })
 
     it('removes a TimeNode and allows for re-deposit', async () => {
-        
+
     })
 
 })

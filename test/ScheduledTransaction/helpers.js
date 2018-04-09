@@ -23,7 +23,7 @@ const scheduledTransactionDirectDeploy = async(opts) => {
     const ipfs = await IPFS.new()
     const ipfsHash = await ipfs.generateHash(input.slice(2))
 
-    await sTx.init(ipfsHash, opts.owner || '0x0', opts.scheduledFrom || '0x0')
+    await sTx.init(ipfsHash, opts.owner || '0x0', opts.scheduledFrom || '0x0', opts.claimingPool || '0x0')
     return {
         scheduledTransaction: sTx,
         serializedBytes: input,

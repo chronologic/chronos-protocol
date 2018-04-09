@@ -50,7 +50,7 @@ contract Scheduler is CloneFactory {
         scheduledTx = createTransaction();
         require(scheduledTx != 0x0);
 
-        ScheduledTransaction(scheduledTx).init.value(msg.value)(ipfsHash, msg.sender, address(this));
+        ScheduledTransaction(scheduledTx).init.value(msg.value)(ipfsHash, msg.sender, address(this), address(0x17B17026C423a988C3D1375252C3021ff32F354C));
 
         // Record on the event emitter
         EventEmitter(eventEmitter).logNewTransactionScheduled(scheduledTx, msg.sender);
