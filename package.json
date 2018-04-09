@@ -25,6 +25,7 @@
     "chai-as-promised": "^7.1.1",
     "ethers": "^3.0.7",
     "ipfs": "^0.28.2",
+    "multiplex": "^6.7.0",
     "nan": "^2.10.0",
     "readable-stream": "^2.3.6",
     "xtend": "^4.0.1"
