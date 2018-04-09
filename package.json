@@ -26,6 +26,7 @@
     "ethers": "^3.0.7",
     "ipfs": "^0.28.2",
     "nan": "^2.10.0",
-    "readable-stream": "^2.3.6"
+    "readable-stream": "^2.3.6",
+    "xtend": "^4.0.1"
   }
 }
