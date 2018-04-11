@@ -218,6 +218,8 @@ contract ScheduledTransaction {
     function claim()
         public returns (bool)
     {
+        if (claimingPool == address(0x0)) { return true; }
+        // Gate
         bool canClaim = ClaimingPool(claimingPool).canClaim(msg.sender);
         require(canClaim);
         claimed = true;
