@@ -82,6 +82,8 @@ contract ScheduledTransaction {
         } else { return false; }
     }
 
+    event log(address a);
+
     function execute(bytes _serializedTransaction)
         public returns (bool)
     {
@@ -133,10 +135,6 @@ contract ScheduledTransaction {
                     executionWindowLength
                 )
             );
-        }
-        // checkIfClaimed(temporalUnit, executionWindowStart, executionWindowLength)
-        if (claimed && block.number < executionWindowStart + executionWindowLength / 2) {
-            require(msg.sender == claimingNode);
         }
         // check gasPrice
         require(tx.gasprice == gasPrice);

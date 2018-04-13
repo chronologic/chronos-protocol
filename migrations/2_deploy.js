@@ -21,4 +21,11 @@ module.exports = (deployer) => {
             ScheduledTransaction.address,
         )
     })
+    .then(() => {
+        const fs = require('fs')
+        fs.writeFileSync('build/a.json', JSON.stringify({
+            eventEmitter: EventEmitter.address,
+            scheduler: Scheduler.address,
+        }))
+    })
 }
