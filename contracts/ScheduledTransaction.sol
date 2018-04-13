@@ -70,19 +70,17 @@ contract ScheduledTransaction {
         } else { return false; }
     }
 
-    function checkIfClaimed(
+    function checkSecondHalfOfExecutionWindow(
         bytes2 temporalUnit,
         uint256 executionWindowStart,
         uint256 executionWindowLength
     ) private view returns (bool) {
         if (temporalUnit == 1) {
-            return block.number < executionWindowStart + executionWindowLength /2;
+            return block.number >= executionWindowStart + executionWindowLength /2;
         } else if (temporalUnit == 2) {
-            return block.timestamp < executionWindowStart + executionWindowLength /2;
+            return block.timestamp >= executionWindowStart + executionWindowLength /2;
         } else { return false; }
     }
-
-    event log(address a);
 
     function execute(bytes _serializedTransaction)
         public returns (bool)
@@ -127,15 +125,20 @@ contract ScheduledTransaction {
             )
         );
         // if claimed, check that claimer is executing
-        if (claimed && msg.sender != claimingNode) {
-            require(
-                checkIfClaimed(
-                    temporalUnit,
-                    executionWindowStart,
-                    executionWindowLength
-                )
-            );
+        if (claimed) {
+            if (msg.sender != claimingNode) {
+                require(
+                    checkSecondHalfOfExecutionWindow(
+                        temporalUnit,
+                        executionWindowStart,
+                        executionWindowLength
+                    )
+                );
+            } else {
+                require(msg.sender == claimingNode);
+            }
         }
+
         // check gasPrice
         require(tx.gasprice == gasPrice);
 
