@@ -1,7 +1,7 @@
 pragma solidity ^0.4.19;
 
 contract EventEmitter {
-    event NewTransactionScheduled(address newTransaction, address indexed scheduledBy, address indexed scheduledFrom);
+    event NewTransactionScheduled(address newTransaction, bytes serializedBytes, address indexed scheduledBy, address indexed scheduledFrom);
     // event Parameters(
     //     bytes2 temporalUnit,
     //     address recipient,
@@ -17,13 +17,14 @@ contract EventEmitter {
 
     function logNewTransactionScheduled(
         address _newTransaction,
+        bytes _serializedBytes,
         address _scheduledBy
     )
         public
     {
         // This will log the `msg.sender` as the last indexed address so that TimeNodes can filter by where
         // the event originated from. Tries to mitigate spam attacks.
-        emit NewTransactionScheduled(_newTransaction, _scheduledBy, msg.sender);
+        emit NewTransactionScheduled(_newTransaction, _serializedBytes, _scheduledBy, msg.sender);
     }
 
     // function logParameters(

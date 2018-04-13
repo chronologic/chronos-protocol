@@ -18,7 +18,7 @@ module.exports = (deployer) => {
             EventEmitter.address,
             "0xCCa19CC61a0B6F5B40525FB3d37124D40b877EF6",
             IPFS.address,
-            "0x0"
+            ScheduledTransaction.address,
         )
     })
 }
