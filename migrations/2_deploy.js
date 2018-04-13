@@ -23,9 +23,11 @@ module.exports = (deployer) => {
     })
     .then(() => {
         const fs = require('fs')
-        fs.writeFileSync('build/a.json', JSON.stringify({
-            eventEmitter: EventEmitter.address,
-            scheduler: Scheduler.address,
-        }))
+        try {
+            fs.writeFileSync('build/a.json', JSON.stringify({
+                eventEmitter: EventEmitter.address,
+                scheduler: Scheduler.address,
+            }))
+        } catch (err) {}
     })
 }
