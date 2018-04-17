@@ -28,38 +28,19 @@ contract Scheduler is CloneFactory {
     function schedule(bytes _serializedTransaction) 
         public payable returns (address scheduledTx)
     {
-        // address recipient;
         uint256 value;
         uint256 callGas;
         uint256 gasPrice;
-        // uint256 executionWindowStart;
-        // uint256 executionWindowLength;
         uint256 bounty;
         uint256 fee;
-        // No requiredDeposit - Use Day Token now
 
         assembly {
-            // recipient := mload(add(_serializedTransaction, 32))
-            value := mload(add(_serializedTransaction,64))
-            callGas := mload(add(_serializedTransaction, 96))
-            gasPrice := mload(add(_serializedTransaction, 128))
-            // executionWindowStart := mload(add(_serializedTransaction, 160))
-            // executionWindowLength := mload(add(_serializedTransaction, 192))
-            bounty := mload(add(_serializedTransaction, 224))
-            fee := mload(add(_serializedTransaction, 256))
-            // CallData = everything after this
+            value := mload(add(_serializedTransaction, 66))
+            callGas := mload(add(_serializedTransaction, 98))
+            gasPrice := mload(add(_serializedTransaction, 130))
+            bounty := mload(add(_serializedTransaction, 226))
+            fee := mload(add(_serializedTransaction, 258))
         }
-
-        // EventEmitter(eventEmitter).logParameters(
-        //     recipient,
-        //     value,
-        //     callGas,
-        //     gasPrice,
-        //     executionWindowStart,
-        //     executionWindowLength,
-        //     bounty,
-        //     fee
-        // );
 
         uint endowment = value + callGas * gasPrice + bounty + fee;
         require(msg.value >= endowment);
@@ -69,10 +50,10 @@ contract Scheduler is CloneFactory {
         scheduledTx = createTransaction();
         require(scheduledTx != 0x0);
 
-        ScheduledTransaction(scheduledTx).init.value(msg.value)(ipfsHash, msg.sender, address(this));
+        ScheduledTransaction(scheduledTx).init.value(msg.value)(ipfsHash, msg.sender, address(this), address(0x17B17026C423a988C3D1375252C3021ff32F354C));
 
         // Record on the event emitter
-        EventEmitter(eventEmitter).logNewTransactionScheduled(scheduledTx, msg.sender, address(this));
+        EventEmitter(eventEmitter).logNewTransactionScheduled(scheduledTx, _serializedTransaction, msg.sender);
     }
 
     function createTransaction() public returns (address) {

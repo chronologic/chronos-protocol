@@ -82,6 +82,7 @@ contract("ScheduledTransaction__execution", (accounts)=> {
         const executionWindowLength = 10
         const bounty = web3.toWei('30', 'gwei')
         const fee = web3.toWei('10', 'gwei')
+        const callData = "0x" + "1337".repeat(32)
 
         // calculate the endowment to send
         const calcEndowment = (val, cg, gp, b, f) => {
@@ -98,6 +99,7 @@ contract("ScheduledTransaction__execution", (accounts)=> {
 
         // serialize the params
         const serializedParams = serializer.serialize(
+            1,
             recipient,
             value,
             callGas,
@@ -106,6 +108,7 @@ contract("ScheduledTransaction__execution", (accounts)=> {
             executionWindowLength,
             bounty,
             fee,
+            callData,
         )
 
         // use the ipfsNode to add this encoded hex string
@@ -123,7 +126,7 @@ contract("ScheduledTransaction__execution", (accounts)=> {
             }
         )
 
-        expect(tx.receipt.status).to.equal('0x01')
+        expect(tx.receipt.status).to.be.oneOf(['0x01', 1])
     })
 
     it('fails to execute before the executionWindowStart', async() => {
@@ -146,6 +149,7 @@ contract("ScheduledTransaction__execution", (accounts)=> {
         
         // decode the data so its nice and usable for us in javascript
         const decoded = serializer.deserialize(data)
+
 
         // we go to two blocks before since the "next" block is the one we test
         await waitUntilBlock(0, decoded.executionWindowStart -2)
@@ -189,7 +193,7 @@ contract("ScheduledTransaction__execution", (accounts)=> {
             gas: 3000000
         })
 
-        expect(tx.receipt.status).to.equal('0x01')
+        expect(tx.receipt.status).to.be.oneOf(['0x01', 1])
     })
 
     it('succeeds to execute at the last block in execution window', async() => {
@@ -223,7 +227,7 @@ contract("ScheduledTransaction__execution", (accounts)=> {
             gas: 3000000
         })
 
-        expect(tx.receipt.status).to.equal('0x01')
+        expect(tx.receipt.status).to.be.oneOf(['0x01', 1])
     })
 
     it('fails to execute after the execution window', async() => {

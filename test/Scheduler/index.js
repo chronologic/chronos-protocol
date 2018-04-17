@@ -47,9 +47,11 @@ contract("Scheduler", (accounts) => {
         const executionWindowLength = 50
         const bounty = 60
         const fee = 70
+        const callData = "0x" + "1337".repeat(32)
 
         // serialize params
         const encoded = serializer.serialize(
+            1,
             recipient,
             value,
             callGas,
@@ -58,11 +60,14 @@ contract("Scheduler", (accounts) => {
             executionWindowLength,
             bounty,
             fee,
+            callData,
         )
 
         // use our running IPFS node to add this encoded hex string (minus the 0x)
         const expectedIpfsHash = await ipfsNode.addString(node, Buffer.from(encoded.slice(2), 'hex'))
 
+
+        // console.log(encoded)
         // schedule a call using the same encoded hex string
         const tx = await scheduler.schedule(encoded, {value: 30000})
 
@@ -75,6 +80,7 @@ contract("Scheduler", (accounts) => {
         }
 
         const log = await getEvent()
+        // console.log(log)
 
         // find the logs containing the newly scheduled contract
         const newTxAddr = log.newTransaction

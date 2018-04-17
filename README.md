@@ -4,12 +4,13 @@
 
 ### FAQ
 [How does this use IPFS?](ipfs.txt)
+[What is the encoding format used for transactions?](encoding.txt)
 
 ### TODOs
  - [ ] write blog
- - [ ] add temporalUnit into encoding
- - [ ] document encoding
- - [ ] document IPFS use
+ - [X] add temporalUnit into encoding
+ - [X] document encoding
+ - [X] document IPFS use
  - [ ] Fix timenode to run IPFS node and read serialization
  - [ ] Claiming mechanism (using DAY ?) - to be determined
  - [ ] new docs (General Overview + dev docs)
