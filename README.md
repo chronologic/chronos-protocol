@@ -1,5 +1,7 @@
 # _UNDER CONSTRUCTION_
 
+[![Join the chat at https://gitter.im/chronologic/chronos](https://badges.gitter.im/chronologic/chronos.svg)](https://gitter.im/chronologic/chronos?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 ![](eacv2.png)
 
 ### FAQ
