@@ -14,7 +14,7 @@ contract PriorityQueue {
 
     // The authorized operator or contract using this Priority
     // Queue
-    address authorized;
+    address public authorized;
 
     struct Timenode {
         address at;
@@ -30,6 +30,10 @@ contract PriorityQueue {
     //constructor
     function PriorityQueue(address _authorized) public {
         authorized = _authorized;
+        heap.push(Timenode({
+            at: address(0x0),
+            bond: 0
+        }));
     }
 
     // Return true if the priority queue is empty

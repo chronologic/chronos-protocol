@@ -5,7 +5,7 @@
  * is enforced by the contract and no more or less.
  */
 
-/** Contract artifacts */
+/** Contract Artifacts */
 const EventEmitter = artifacts.require('EventEmitter.sol')
 const IPFS = artifacts.require('IPFS.sol')
 const Scheduler = artifacts.require('Scheduler.sol')
