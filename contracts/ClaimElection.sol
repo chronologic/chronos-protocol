@@ -53,12 +53,18 @@ contract ClaimElection {
         return true;
     }
 
-    // function getNext()
-    //     auth
-    //     public returns (address)
-    // {
-        
-    // }
+    function getNext()
+        auth
+        public returns (address)
+    {
+        if (pQueue.isEmpty()) {
+            return address(0x0);
+        }
+
+        var (_, next) = pQueue.pop();
+
+        return next;
+    }
 
 
 
