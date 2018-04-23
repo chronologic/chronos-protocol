@@ -4,3 +4,4 @@ build
 build/*
 test/ClaimingPool
 scripts/ClaimingPool
+tmp

@@ -48,7 +48,7 @@ contract PriorityQueue {
         public view returns (uint256, address)
     {
         require(!isEmpty());
-        return (heap[1].bond, heap[1].at);
+        return (heap[0].bond, heap[0].at);
     }
 
     function insert(uint256 _priority, address _tn) 
@@ -76,9 +76,9 @@ contract PriorityQueue {
         uint256 j = _i;
 
         var (newVal, newTn) = getAtIndex(j);
-        while (newVal < heap[j / 2].bond){
-            heap[j] = heap[j / 2];
-            j = j / 2;
+        while(j > 0 && heap[j / 2].bond < newVal) {
+            heap[j] = heap[j/2];
+            j = j/2 ;
         }
         if (j != _i) {
             heap[j] = Timenode({
@@ -93,10 +93,10 @@ contract PriorityQueue {
         public returns (uint256 retVal, address retAddr)
     {
         (retVal, retAddr) = peek();
-        heap[1] = heap[size];
+        heap[0] = heap[size];
         delete heap[size];
         size = size - 1; //todo SafeMath
-        percDown(1);
+        percDown(0);
         heap.length = heap.length -1;
         // retVal returns
     }
@@ -105,32 +105,29 @@ contract PriorityQueue {
         private
     {
         uint256 j = _i;
-        var (newVal, newTn) = getAtIndex(j);
-        uint256 mc = minChild(j);
-        while (mc <= size && newVal > heap[mc].bond) {
-            heap[j] = heap[mc];
-            j = mc;
-            mc = minChild(j);
-        }
-        if (j != _i) {
-            heap[j] = Timenode({
-                bond: newVal,
-                at: newTn
-            });
-        }
-    }
 
-    function minChild(uint256 _i)
-        private returns (uint256 mc)
-    {
-        if (_i * 2 + 1 > size) {
-            mc = _i *2;
+        uint256 largest;
+        uint256 left = 2*j +1;
+        uint256 right = left +1;
+
+        if (left < size && heap[left].bond > heap[j].bond) {
+            largest = left;
         } else {
-            if (heap[_i * 2].bond < heap[_i * 2 + 1].bond) {
-                mc = _i * 2;
-            } else {
-                mc = _i * 2 +1;
-            }
+            largest = j;
+        }
+
+        if(right < size && heap[right].bond > heap[largest].bond) {
+            largest = right;
+        }
+
+        if (largest != j) {
+            var (newVal, newTn) = getAtIndex(j);
+            heap[j] = heap[largest];
+            heap[largest] = Timenode({
+                at: newTn,
+                bond: newVal
+            });
+            percDown(largest);
         }
     }
 }

@@ -12,6 +12,7 @@ contract("PriorityQueue", (accounts) => {
         three,
         four,
         five,
+        six,
     ] = accounts
 
     const owner = accounts[7]
@@ -49,6 +50,7 @@ contract("PriorityQueue", (accounts) => {
         const valRes3 = await pQueue.insert(12, three, {from: controller})
         const valRes4 = await pQueue.insert(30, four, {from: controller})
         const valRes5 = await pQueue.insert(25, five, {from: controller})
+        const valRes6 = await pQueue.insert(67, six, {from: controller})
 
         for (let i = 1; i < 6; i++) {
             expect(
@@ -56,7 +58,42 @@ contract("PriorityQueue", (accounts) => {
             ).to.equal('0x01')
         }
 
-        const res = await pQueue.peek()
-        console.log(res)
+        expect(
+            (await pQueue.peek())[0].toNumber()
+        ).to.equal(67)
+        await pQueue.pop({from: controller})
+
+
+        expect(
+            (await pQueue.peek())[0].toNumber()
+        ).to.equal(45)
+        await pQueue.pop({from: controller})
+
+
+        expect(
+            (await pQueue.peek())[0].toNumber()
+        ).to.equal(33)
+        await pQueue.pop({from: controller})
+
+
+        expect(
+            (await pQueue.peek())[0].toNumber()
+        ).to.equal(30)
+        await pQueue.pop({from: controller})
+
+
+        expect(
+            (await pQueue.peek())[0].toNumber()
+        ).to.equal(25)
+        await pQueue.pop({from: controller})
+
+
+        expect(
+            (await pQueue.peek())[0].toNumber()
+        ).to.equal(12)
+        await pQueue.pop({from: controller})
+
+        console.log(await pQueue.peek())
+        console.log(await pQueue.getAtIndex(1))
     })
 })
