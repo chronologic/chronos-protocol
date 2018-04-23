@@ -16,6 +16,11 @@ contract PriorityQueue {
     // Queue
     address authorized;
 
+    struct Timenode {
+        address at;
+        uint256 deposit;
+    }
+
     // The heap
     uint256[] heap;
 

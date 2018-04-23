@@ -4,7 +4,7 @@ import "../chronologic/contracts/DayToken.sol";
 
 contract ClaimingPool {
     /// The ClaimingPool is a contract where TimeNodes can deposit ChronoLogic Day 
-    /// token to be included in the claiming mechanism of the Pendulum protocol. 
+    /// token to be included in the claiming mechanism of the Chronos protocol. 
 
     struct Deposit {
         bool deposited;
