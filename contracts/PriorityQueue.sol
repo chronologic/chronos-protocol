@@ -18,11 +18,11 @@ contract PriorityQueue {
 
     struct Timenode {
         address at;
-        uint256 deposit;
+        uint256 bond;
     }
 
     // The heap
-    uint256[] heap;
+    Timenode[] heap;
 
     // The size of the queue
     uint256 size;
@@ -41,20 +41,29 @@ contract PriorityQueue {
 
     // Returns the next in the priority queue
     function peek()
-        public view returns (uint256)
+        public view returns (uint256, address)
     {
         require(!isEmpty());
-        return heap[1];
+        return (heap[1].bond, heap[1].at);
     }
 
-    function insert(uint256 _priority) 
+    function insert(uint256 _priority, address _tn) 
         auth
         public returns (bool)
     {
-        heap.push(_priority);
+        heap.push(Timenode({
+            at: _tn,
+            bond: _priority
+        }));
         size += 1; //todo SafeMath
         percUp(size);
         return true;
+    }
+
+    function getAtIndex(uint256 _idx)
+        public view returns (uint256, address)
+    {
+        return (heap[_idx].bond, heap[_idx].at);
     }
 
     function percUp(uint256 _i)
@@ -62,21 +71,24 @@ contract PriorityQueue {
     {
         uint256 j = _i;
 
-        uint256 newVal = heap[j];
-        while (newVal < heap[j / 2]){
+        var (newVal, newTn) = getAtIndex(j);
+        while (newVal < heap[j / 2].bond){
             heap[j] = heap[j / 2];
             j = j / 2;
         }
         if (j != _i) {
-            heap[j] = newVal;
+            heap[j] = Timenode({
+                at: newTn,
+                bond: newVal
+            });
         }
     }
 
     function pop()
         auth
-        public returns (uint256 retVal)
+        public returns (uint256 retVal, address retAddr)
     {
-        retVal = heap[1];
+        (retVal, retAddr) = peek();
         heap[1] = heap[size];
         delete heap[size];
         size = size - 1; //todo SafeMath
@@ -89,15 +101,18 @@ contract PriorityQueue {
         private
     {
         uint256 j = _i;
-        uint256 newVal = heap[j];
+        var (newVal, newTn) = getAtIndex(j);
         uint256 mc = minChild(j);
-        while (mc <= size && newVal > heap[mc]) {
+        while (mc <= size && newVal > heap[mc].bond) {
             heap[j] = heap[mc];
             j = mc;
             mc = minChild(j);
         }
         if (j != _i) {
-            heap[j] = newVal;
+            heap[j] = Timenode({
+                bond: newVal,
+                at: newTn
+            });
         }
     }
 
@@ -107,7 +122,7 @@ contract PriorityQueue {
         if (_i * 2 + 1 > size) {
             mc = _i *2;
         } else {
-            if (heap[_i * 2] < heap[_i * 2 + 1]) {
+            if (heap[_i * 2].bond < heap[_i * 2 + 1].bond) {
                 mc = _i * 2;
             } else {
                 mc = _i * 2 +1;
