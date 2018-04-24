@@ -56,7 +56,9 @@ contract Scheduler is CloneFactory {
         require(scheduledTx != 0x0);
 
         /// Claim Logic Start
-        address nextClaimingNode = ClaimElection(claimElection).getNext();
+        if (!ClaimElection(claimElection).isEmpty()) {
+            address nextClaimingNode = ClaimElection(claimElection).getNext();
+        }
         /// Claim Logic End
 
         ScheduledTransaction(scheduledTx).init.value(msg.value)(ipfsHash, msg.sender, address(this), address(0x17B17026C423a988C3D1375252C3021ff32F354C));
