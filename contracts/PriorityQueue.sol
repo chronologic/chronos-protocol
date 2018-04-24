@@ -1,40 +1,24 @@
 pragma solidity ^0.4.21;
 
+import "./Auth.sol";
+
 /**
  * PriorityQueue
  * Cribbed from https://github.com/omisego/plasma-mvp/blob/master/plasma/root_chain/contracts/DataStructures/PriorityQueue.sol
+ * Changed to be max value heap instead of min value, and use the `Timenode` struct.
  */
 
-contract PriorityQueue {
-
-    modifier auth() {
-        require(msg.sender == authorized);
-        _;
-    }
-
-    // The authorized operator or contract using this Priority
-    // Queue
-    address public authorized;
+contract PriorityQueue is Auth {
 
     struct Timenode {
         address at;
         uint256 bond;
     }
 
-    // The heap
     Timenode[] heap;
-
-    // The size of the queue
     uint256 size;
 
-    //constructor
-    function PriorityQueue(address _authorized) public {
-        authorized = _authorized;
-        // heap.push(Timenode({
-        //     at: address(0x0),
-        //     bond: 0
-        // }));
-    }
+    function PriorityQueue() public {}
 
     // Return true if the priority queue is empty
     function isEmpty()

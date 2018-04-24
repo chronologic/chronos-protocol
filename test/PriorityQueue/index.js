@@ -21,12 +21,9 @@ contract("PriorityQueue", (accounts) => {
     let pQueue
 
     before(async () => {
-        pQueue = await PriorityQueue.new(
-            controller,
-            {
-                from: owner,
-            }
-        )
+        pQueue = await PriorityQueue.new({
+            from: controller,
+        })
         expect(pQueue.address).to.exist
     })
 

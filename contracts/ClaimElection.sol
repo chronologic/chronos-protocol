@@ -1,23 +1,16 @@
 pragma solidity ^0.4.21;
 
+import "./Auth.sol";
 import "../chronologic/contracts/DayToken.sol";
 import "./PriorityQueue.sol";
 
-contract ClaimElection {
+contract ClaimElection is Auth {
     PriorityQueue pQueue;
     DayToken token;
 
-    address public authorized;
-
     //constructor
     function ClaimElection() public {
-        authorized = msg.sender;
-        pQueue = new PriorityQueue(address(this));
-    }
-
-    modifier auth() {
-        require(msg.sender == authorized);
-        _;
+        pQueue = new PriorityQueue();
     }
 
     function setToken(address _t) public auth {
