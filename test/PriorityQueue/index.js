@@ -55,76 +55,102 @@ contract("PriorityQueue", (accounts) => {
             ).to.equal('0x01')
         }
 
+        const peek1 = await pQueue.peek()
 
-        console.log(
-            '0 | ' + await pQueue.getAtIndex(0) + '\n' +
-            '1 | ' + await pQueue.getAtIndex(1) + '\n' +
-            '2 | ' + await pQueue.getAtIndex(2) + '\n' +
-            '3 | ' + await pQueue.getAtIndex(3) + '\n' +
-            '4 | ' + await pQueue.getAtIndex(4) + '\n' +
-            '5 | ' + await pQueue.getAtIndex(5) + '\n' +
-            '6 | ' + await pQueue.getAtIndex(6) + '\n' +
-            '7 | ' + await pQueue.getAtIndex(7) + '\n' 
-        )
+        const expectPeek = (peekArr, expVal, expAddr) => {
+            const [val,addr] = peekArr
+            expect(val.toNumber()).to.equal(expVal)
+            expect(addr).to.equal(expAddr)
+        }
 
-        await pQueue.pop({from: controller})
-        console.log('POP!')
+        expectPeek(peek1, 67, six)
 
-        console.log(
-            '0 | ' + await pQueue.getAtIndex(0) + '\n' +
-            '1 | ' + await pQueue.getAtIndex(1) + '\n' +
-            '2 | ' + await pQueue.getAtIndex(2) + '\n' +
-            '3 | ' + await pQueue.getAtIndex(3) + '\n' +
-            '4 | ' + await pQueue.getAtIndex(4) + '\n' +
-            '5 | ' + await pQueue.getAtIndex(5) + '\n' +
-            '6 | ' + await pQueue.getAtIndex(6) + '\n' +
-            '7 | ' + await pQueue.getAtIndex(7) + '\n' 
-        )
+        const pop1 = await pQueue.pop({from: controller})
 
+        const getPopArgs = (popTxObj) => {
+            const popEvent = popTxObj.logs.find((log) => log.event === 'POP')
+            if (popEvent === 'undefined') return null
+            else return {
+                val: popEvent.args.val.toNumber(),
+                addr: popEvent.args.addr,
+            }
+        }
 
-        await pQueue.pop({from: controller})
-        console.log('POP!')
-
-        console.log(
-            '0 | ' + await pQueue.getAtIndex(0) + '\n' +
-            '1 | ' + await pQueue.getAtIndex(1) + '\n' +
-            '2 | ' + await pQueue.getAtIndex(2) + '\n' +
-            '3 | ' + await pQueue.getAtIndex(3) + '\n' +
-            '4 | ' + await pQueue.getAtIndex(4) + '\n' +
-            '5 | ' + await pQueue.getAtIndex(5) + '\n' +
-            '6 | ' + await pQueue.getAtIndex(6) + '\n' +
-            '7 | ' + await pQueue.getAtIndex(7) + '\n' 
-        )
+        const args1 = getPopArgs(pop1)
+        expect(args1.val).to.equal(67)
+        expect(args1.addr).to.equal(six)
 
 
-        await pQueue.pop({from: controller})
-        console.log('POP!')
 
-        console.log(
-            '0 | ' + await pQueue.getAtIndex(0) + '\n' +
-            '1 | ' + await pQueue.getAtIndex(1) + '\n' +
-            '2 | ' + await pQueue.getAtIndex(2) + '\n' +
-            '3 | ' + await pQueue.getAtIndex(3) + '\n' +
-            '4 | ' + await pQueue.getAtIndex(4) + '\n' +
-            '5 | ' + await pQueue.getAtIndex(5) + '\n' +
-            '6 | ' + await pQueue.getAtIndex(6) + '\n' +
-            '7 | ' + await pQueue.getAtIndex(7) + '\n' 
-        )
+        // console.log(
+        //     '0 | ' + await pQueue.getAtIndex(0) + '\n' +
+        //     '1 | ' + await pQueue.getAtIndex(1) + '\n' +
+        //     '2 | ' + await pQueue.getAtIndex(2) + '\n' +
+        //     '3 | ' + await pQueue.getAtIndex(3) + '\n' +
+        //     '4 | ' + await pQueue.getAtIndex(4) + '\n' +
+        //     '5 | ' + await pQueue.getAtIndex(5) + '\n' +
+        //     '6 | ' + await pQueue.getAtIndex(6) + '\n' +
+        //     '7 | ' + await pQueue.getAtIndex(7) + '\n' 
+        // )
+
+        // await pQueue.pop({from: controller})
+        // console.log('POP!')
+
+        // console.log(
+        //     '0 | ' + await pQueue.getAtIndex(0) + '\n' +
+        //     '1 | ' + await pQueue.getAtIndex(1) + '\n' +
+        //     '2 | ' + await pQueue.getAtIndex(2) + '\n' +
+        //     '3 | ' + await pQueue.getAtIndex(3) + '\n' +
+        //     '4 | ' + await pQueue.getAtIndex(4) + '\n' +
+        //     '5 | ' + await pQueue.getAtIndex(5) + '\n' +
+        //     '6 | ' + await pQueue.getAtIndex(6) + '\n' +
+        //     '7 | ' + await pQueue.getAtIndex(7) + '\n' 
+        // )
 
 
-        await pQueue.pop({from: controller})
-        console.log('POP!')
+        // await pQueue.pop({from: controller})
+        // console.log('POP!')
 
-        console.log(
-            '0 | ' + await pQueue.getAtIndex(0) + '\n' +
-            '1 | ' + await pQueue.getAtIndex(1) + '\n' +
-            '2 | ' + await pQueue.getAtIndex(2) + '\n' +
-            '3 | ' + await pQueue.getAtIndex(3) + '\n' +
-            '4 | ' + await pQueue.getAtIndex(4) + '\n' +
-            '5 | ' + await pQueue.getAtIndex(5) + '\n' +
-            '6 | ' + await pQueue.getAtIndex(6) + '\n' +
-            '7 | ' + await pQueue.getAtIndex(7) + '\n' 
-        )
+        // console.log(
+        //     '0 | ' + await pQueue.getAtIndex(0) + '\n' +
+        //     '1 | ' + await pQueue.getAtIndex(1) + '\n' +
+        //     '2 | ' + await pQueue.getAtIndex(2) + '\n' +
+        //     '3 | ' + await pQueue.getAtIndex(3) + '\n' +
+        //     '4 | ' + await pQueue.getAtIndex(4) + '\n' +
+        //     '5 | ' + await pQueue.getAtIndex(5) + '\n' +
+        //     '6 | ' + await pQueue.getAtIndex(6) + '\n' +
+        //     '7 | ' + await pQueue.getAtIndex(7) + '\n' 
+        // )
+
+
+        // await pQueue.pop({from: controller})
+        // console.log('POP!')
+
+        // console.log(
+        //     '0 | ' + await pQueue.getAtIndex(0) + '\n' +
+        //     '1 | ' + await pQueue.getAtIndex(1) + '\n' +
+        //     '2 | ' + await pQueue.getAtIndex(2) + '\n' +
+        //     '3 | ' + await pQueue.getAtIndex(3) + '\n' +
+        //     '4 | ' + await pQueue.getAtIndex(4) + '\n' +
+        //     '5 | ' + await pQueue.getAtIndex(5) + '\n' +
+        //     '6 | ' + await pQueue.getAtIndex(6) + '\n' +
+        //     '7 | ' + await pQueue.getAtIndex(7) + '\n' 
+        // )
+
+
+        // await pQueue.pop({from: controller})
+        // console.log('POP!')
+
+        // console.log(
+        //     '0 | ' + await pQueue.getAtIndex(0) + '\n' +
+        //     '1 | ' + await pQueue.getAtIndex(1) + '\n' +
+        //     '2 | ' + await pQueue.getAtIndex(2) + '\n' +
+        //     '3 | ' + await pQueue.getAtIndex(3) + '\n' +
+        //     '4 | ' + await pQueue.getAtIndex(4) + '\n' +
+        //     '5 | ' + await pQueue.getAtIndex(5) + '\n' +
+        //     '6 | ' + await pQueue.getAtIndex(6) + '\n' +
+        //     '7 | ' + await pQueue.getAtIndex(7) + '\n' 
+        // )
 
         // expect(
         //     (await pQueue.peek())[0].toNumber()

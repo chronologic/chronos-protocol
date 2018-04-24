@@ -73,6 +73,8 @@ contract PriorityQueue is Auth {
         }
     }
 
+    event POP(uint256 val, address addr);
+
     function pop()
         auth
         public returns (uint256 retVal, address retAddr)
@@ -83,6 +85,7 @@ contract PriorityQueue is Auth {
         size = size - 1; //todo SafeMath
         percDown(0);
         heap.length = heap.length -1;
+        POP(retVal, retAddr);
         // retVal returns
     }
 
