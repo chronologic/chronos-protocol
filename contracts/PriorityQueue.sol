@@ -30,10 +30,10 @@ contract PriorityQueue {
     //constructor
     function PriorityQueue(address _authorized) public {
         authorized = _authorized;
-        heap.push(Timenode({
-            at: address(0x0),
-            bond: 0
-        }));
+        // heap.push(Timenode({
+        //     at: address(0x0),
+        //     bond: 0
+        // }));
     }
 
     // Return true if the priority queue is empty
@@ -51,6 +51,13 @@ contract PriorityQueue {
         return (heap[0].bond, heap[0].at);
     }
 
+    function getAtIndex(uint256 _idx)
+        public view returns (uint256, address)
+    {
+        if (_idx >= size) return;
+        return (heap[_idx].bond, heap[_idx].at);
+    }
+
     function insert(uint256 _priority, address _tn) 
         auth
         public returns (bool)
@@ -60,14 +67,8 @@ contract PriorityQueue {
             bond: _priority
         }));
         size += 1; //todo SafeMath
-        percUp(size);
+        percUp(size-1);
         return true;
-    }
-
-    function getAtIndex(uint256 _idx)
-        public view returns (uint256, address)
-    {
-        return (heap[_idx].bond, heap[_idx].at);
     }
 
     function percUp(uint256 _i)
@@ -78,7 +79,7 @@ contract PriorityQueue {
         var (newVal, newTn) = getAtIndex(j);
         while(j > 0 && heap[j / 2].bond < newVal) {
             heap[j] = heap[j/2];
-            j = j/2 ;
+            j = j/2;
         }
         if (j != _i) {
             heap[j] = Timenode({
@@ -93,8 +94,8 @@ contract PriorityQueue {
         public returns (uint256 retVal, address retAddr)
     {
         (retVal, retAddr) = peek();
-        heap[0] = heap[size];
-        delete heap[size];
+        heap[0] = heap[size-1];
+        delete heap[size-1];
         size = size - 1; //todo SafeMath
         percDown(0);
         heap.length = heap.length -1;
@@ -107,8 +108,8 @@ contract PriorityQueue {
         uint256 j = _i;
 
         uint256 largest;
-        uint256 left = 2*j +1;
-        uint256 right = left +1;
+        uint256 left = 2*j+1;
+        uint256 right = left+1;
 
         if (left < size && heap[left].bond > heap[j].bond) {
             largest = left;
