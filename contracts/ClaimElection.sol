@@ -74,6 +74,6 @@ contract ClaimElection is Auth {
     function isEmpty()
         public view returns (bool)
     {
-        return pQueue.isEmpty()
+        return pQueue.isEmpty();
     }
 }
