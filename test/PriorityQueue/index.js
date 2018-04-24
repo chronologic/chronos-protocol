@@ -80,8 +80,6 @@ contract("PriorityQueue", (accounts) => {
         expect(args1.val).to.equal(67)
         expect(args1.addr).to.equal(six)
 
-
-
         // console.log(
         //     '0 | ' + await pQueue.getAtIndex(0) + '\n' +
         //     '1 | ' + await pQueue.getAtIndex(1) + '\n' +

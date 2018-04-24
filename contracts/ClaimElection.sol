@@ -5,8 +5,8 @@ import "../chronologic/contracts/DayToken.sol";
 import "./PriorityQueue.sol";
 
 contract ClaimElection is Auth {
-    PriorityQueue pQueue;
-    DayToken token;
+    PriorityQueue public pQueue;
+    DayToken public token;
 
     //constructor
     function ClaimElection() public {
@@ -46,6 +46,18 @@ contract ClaimElection is Auth {
         return true;
     }
 
+    function getNumBonds(address _tn)
+        public view returns (uint256)
+    {
+        return numBonds[_tn];
+    }
+
+    function getBond(address _tn, uint256 _num)
+        public view returns (uint256)
+    {
+        return bonds[_tn][_num].value;
+    }
+
     function getNext()
         auth
         public returns (address)
@@ -58,7 +70,4 @@ contract ClaimElection is Auth {
 
         return next;
     }
-
-
-
 }
