@@ -1,6 +1,5 @@
 pragma solidity ^0.4.19;
 
-import "./ClaimingPool.sol";
 import "./IPFS.sol";
 import "./Scheduler.sol";
 
@@ -29,19 +28,17 @@ contract ScheduledTransaction {
     // disallow receiving ether
     function() public {revert();}
 
-    address public claimingPool;
-
     function init(
         bytes32 _ipfsHash,
         address _owner,
         address _scheduledFrom,
-        address _claimingPool
+        address _claimingNode
     ) public payable {
         require(!initialized);
         ipfsHash = _ipfsHash;
         owner = _owner;
         scheduledFrom = _scheduledFrom;
-        claimingPool = _claimingPool;
+        claimingNode = _claimingNode;
         initialized = true;
     }
 
@@ -216,16 +213,16 @@ contract ScheduledTransaction {
         return true;
     }
 
-    function claim()
-        public returns (bool)
-    {
-        if (claimingPool == address(0x0)) { return true; }
-        // Gate
-        bool canClaim = ClaimingPool(claimingPool).canClaim(msg.sender);
-        require(canClaim);
-        claimed = true;
-        claimingNode = msg.sender;
-    }
+    // function claim()
+    //     public returns (bool)
+    // {
+    //     if (claimingPool == address(0x0)) { return true; }
+    //     // Gate
+    //     bool canClaim = ClaimingPool(claimingPool).canClaim(msg.sender);
+    //     require(canClaim);
+    //     claimed = true;
+    //     claimingNode = msg.sender;
+    // }
 
     function proxy(address _to, bytes _data)
         public payable returns (bool)

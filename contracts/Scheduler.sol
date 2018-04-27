@@ -1,5 +1,6 @@
 pragma solidity ^0.4.19;
 
+import "./ClaimElection.sol";
 import "./CloneFactory.sol";
 import "./EventEmitter.sol";
 import "./IPFS.sol";
@@ -8,6 +9,7 @@ import "./ScheduledTransaction.sol";
 contract Scheduler is CloneFactory {
     function () public {revert();}
 
+    address public claimElection;
     address public eventEmitter;
     address public feeRecipient;
     address public ipfs;
@@ -19,6 +21,9 @@ contract Scheduler is CloneFactory {
         address _ipfsLib,
         address _scheduledTxCore
     ) public {
+        // Deploy a new pQueue and claim election
+        claimElection = address(new ClaimElection());
+
         eventEmitter = _eventEmitter;
         feeRecipient = _feeRecipient;
         ipfs = _ipfsLib;
@@ -49,6 +54,12 @@ contract Scheduler is CloneFactory {
 
         scheduledTx = createTransaction();
         require(scheduledTx != 0x0);
+
+        /// Claim Logic Start
+        if (!ClaimElection(claimElection).isEmpty()) {
+            address nextClaimingNode = ClaimElection(claimElection).getNext();
+        }
+        /// Claim Logic End
 
         ScheduledTransaction(scheduledTx).init.value(msg.value)(ipfsHash, msg.sender, address(this), address(0x17B17026C423a988C3D1375252C3021ff32F354C));
 
