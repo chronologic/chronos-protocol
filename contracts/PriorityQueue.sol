@@ -134,17 +134,22 @@ contract PriorityQueue is Auth {
         uint256 _priority = heap.timeNodes[_timeNode].bond;
         address _tn = heap.timeNodes[_timeNode].at;
 
-        if (heap.timeNodes[_timeNode].left != 0x0) {
-
-        } else {
+        if (heap.timeNodes[_timeNode].left == 0x0) {
           heap.first = heap.timeNodes[_timeNode].right;
           heap.maxBond = heap.timeNodes[ heap.timeNodes[_timeNode].right ].bond;
+          heap.timeNodes[ heap.timeNodes[_timeNode].right ].left = 0x0;
+        } else {
+          heap.timeNodes[ heap.timeNodes[_timeNode].left ].right = heap.timeNodes[_timeNode].right;
         }
 
         if (heap.timeNodes[_timeNode].right == 0x0) {
           heap.last = heap.timeNodes[_timeNode].left;
           heap.minBond = heap.timeNodes[ heap.timeNodes[_timeNode].left ].bond;
+          heap.timeNodes[ heap.timeNodes[_timeNode].left ].right = 0x0;
+        } else {
+          heap.timeNodes[ heap.timeNodes[_timeNode].right ].left = heap.timeNodes[_timeNode].left;
         }
+
         delete(heap.timeNodes[_timeNode]);
         heap.size = heap.size-1;
         emit Exit(_priority, _tn);
