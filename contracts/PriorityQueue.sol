@@ -11,20 +11,20 @@ import "./Auth.sol";
 contract PriorityQueue is Auth {
 
     struct Timenode {
-        bytes32 id;
+        bytes20 id;
         address at;
         uint256 bond;
-        bytes32 left;
-        bytes32 right;
+        bytes20 left;
+        bytes20 right;
     }
 
     struct Queue {
         uint256 size;
-        bytes32 first;
-        bytes32 last;
+        bytes20 first;
+        bytes20 last;
         uint256 minBond;
         uint256 maxBond;
-        mapping( bytes32=>Timenode ) timeNodes;
+        mapping( bytes20=>Timenode ) timeNodes;
     }
 
     Queue heap;
@@ -49,19 +49,19 @@ contract PriorityQueue is Auth {
     }
 
     function firstNode()
-        public view returns (bytes32)
+        public view returns (bytes20)
     {
       return heap.first;
     }
 
     function lastNode()
-        public view returns (bytes32)
+        public view returns (bytes20)
     {
       return heap.last;
     }
 
-    function getTimeNode (bytes32 _timeNode)
-        public view returns (bytes32 id, address at, uint256 bond, bytes32 left, bytes32 right)
+    function getTimeNode (bytes20 _timeNode)
+        public view returns (bytes20 id, address at, uint256 bond, bytes20 left, bytes20 right)
     {
         return (heap.timeNodes[_timeNode].id, heap.timeNodes[_timeNode].at, heap.timeNodes[_timeNode].bond, heap.timeNodes[_timeNode].left, heap.timeNodes[_timeNode].right);
     }
@@ -74,14 +74,14 @@ contract PriorityQueue is Auth {
         return (heap.timeNodes[heap.first].bond, heap.timeNodes[heap.first].at);
     }
 
-    function getAtIndex(bytes32 _idx)
+    function getAtIndex(bytes20 _idx)
         public view returns (uint256, address)
     {
         if (heap.timeNodes[_idx].at == 0x0) return;
         return (heap.timeNodes[_idx].bond, heap.timeNodes[_idx].at);
     }
 
-    function validateInsertPosition( bytes32 _previousNode, uint256 _priority)
+    function validateInsertPosition( bytes20 _previousNode, uint256 _priority)
         public view returns (bool)
      {
         if(_previousNode != 0x0){
@@ -97,12 +97,12 @@ contract PriorityQueue is Auth {
         return true;
     }
 
-    function insert(bytes32 _previousNode,uint256 _priority, address _tn)
+    function insert(bytes20 _previousNode,uint256 _priority, address _tn)
         auth
         public returns (bool)
     {
         require(validateInsertPosition(_previousNode,_priority));
-        bytes32 _idx = keccak256(_tn,_priority,block.timestamp);// reduce posibility of overwriting
+        bytes20 _idx = ripemd160(_tn,_priority,block.timestamp);// reduce posibility of overwriting
 
         assert(heap.timeNodes[_idx].at == 0x0); // Ensure no overwriting
 
@@ -126,7 +126,7 @@ contract PriorityQueue is Auth {
         return true;
     }
 
-    function remove(bytes32 _timeNode)
+    function remove(bytes20 _timeNode)
         internal returns (bool)
     {
         require(_timeNode != 0x0);
@@ -162,7 +162,7 @@ contract PriorityQueue is Auth {
     }
 
     function getInsertPosition(uint256 _bond)
-        public view returns (bytes32 _previousNode)
+        public view returns (bytes20 _previousNode)
     { //Should only be called from JS using(.call), to ensure maximum gasOptimization
         if (_bond > heap.maxBond) {
           return 0;
@@ -178,9 +178,9 @@ contract PriorityQueue is Auth {
     }
 
     function percUp (uint256 _bond)
-        public view returns (bytes32 _previousNode)
+        public view returns (bytes20 _previousNode)
     {
-        bytes32 activeNode = heap.timeNodes[heap.last].left;
+        bytes20 activeNode = heap.timeNodes[heap.last].left;
         for ( uint256 i = heap.size-2; i>0; i--) {
           if( activeNode == 0x0) { //If it reaches the top of the queue, should never happen
             return 0;
@@ -193,9 +193,9 @@ contract PriorityQueue is Auth {
     }
 
     function percDown (uint256 _bond)
-        public view returns (bytes32 _previousNode)
+        public view returns (bytes20 _previousNode)
     {
-      bytes32 activeNode = heap.first;
+      bytes20 activeNode = heap.first;
       for ( uint256 i = 0; i < heap.size; i++) {
         if( activeNode == 0x0) { //If it reaches the end of the queue, should never happen
           return heap.last;
