@@ -47,7 +47,9 @@ contract("Scheduler", (accounts) => {
         const executionWindowLength = 50
         const bounty = 60
         const fee = 70
+        const conditionalDest = '0x0000000000000000000000000000000000000000'
         const callData = "0x" + "1337".repeat(32)
+        const conditionalCallData = callData
 
         // serialize params
         const encoded = serializer.serialize(
@@ -60,7 +62,9 @@ contract("Scheduler", (accounts) => {
             executionWindowLength,
             bounty,
             fee,
+            conditionalDest,
             callData,
+            conditionalCallData
         )
 
         // use our running IPFS node to add this encoded hex string (minus the 0x)

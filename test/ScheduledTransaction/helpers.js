@@ -17,7 +17,9 @@ const scheduledTransactionDirectDeploy = async(opts) => {
         opts.executionWindowLength || 0,
         opts.bounty || 0,
         opts.fee || 0,
+        opts.conditionalDest || '0x0000000000000000000000000000000000000000',
         opts.callData || "0x" + "1337".repeat(32),
+        opts.conditionalCallData || "0x"
     )
 
     const ipfs = await IPFS.new()

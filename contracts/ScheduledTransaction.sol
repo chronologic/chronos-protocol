@@ -49,6 +49,29 @@ contract ScheduledTransaction {
         return checkHash == ipfsHash;
     }
 
+    function callWithData(address dest, bytes data) 
+        private returns (bytes32 c)
+    {
+        assembly {
+            let freemem := mload(0x40)
+            
+            pop(
+            call(      
+                5000, //5k gas
+                dest, //To addr
+                0,    //No value
+                add(data, 0x20),    //Inputs are stored at location x
+                mload(data),
+                freemem,    //Store output over input (saves space)
+                0x20 //Outputs are 32 bytes long
+            )
+            )
+    
+            c := mload(freemem) //Assign output value to c
+            mstore(0x40, add(freemem, 0x20)) // Set storage pointer to empty space
+        }
+    }
+
     function checkInExecutionWindow(
         bytes2 temporalUnit,
         uint256 executionWindowStart,
@@ -79,11 +102,28 @@ contract ScheduledTransaction {
         } else { return false; }
     }
 
+    function canExecute(bytes _serializedTransaction) public view returns(bool) {
+        address conditionalDest;
+
+        assembly {
+            conditionalDest := mload(add(_serializedTransaction, 290))
+        }
+
+        if (conditionalDest == 0x0) { //no conditional data
+            return true;
+        }
+
+        bytes memory conditionalCallData = getCallData(_serializedTransaction, 354);
+
+        return true; //callWithData(conditionalDest, conditionalCallData) == 1;
+    }
+
     function execute(bytes _serializedTransaction)
         public returns (bool)
     {
         // uint256 startGas = msg.gas;
         require(checkHash(_serializedTransaction));
+        require(canExecute(_serializedTransaction));
 
         bytes2 temporalUnit;
         address recipient;
@@ -107,7 +147,7 @@ contract ScheduledTransaction {
             fee := mload(add(_serializedTransaction, 258))
         }
 
-        bytes memory callData = getCallData(_serializedTransaction);
+        bytes memory callData = getCallData(_serializedTransaction, 324);
 
         // check gasleft() >= requiredGas
         require(gasleft() >= callGas + 180000 - 25000);
@@ -160,16 +200,20 @@ contract ScheduledTransaction {
         return true;
     }
 
-    function getCallData(bytes _serializedTransaction)
-        private view returns (bytes)
+    function getCallData(bytes _serializedTransaction, uint _startLoc) 
+        public view returns (bytes)
     {
-        uint256 callDataLen;
-        uint256 callDataLoc;
+        uint256 start;
         assembly {
-            callDataLen := mload(add(_serializedTransaction, 322))
-            callDataLoc := add(_serializedTransaction, 354)
+            start := mload(add(_serializedTransaction, _startLoc))
         }
-        return toBytes(callDataLoc, callDataLen);
+        uint256 len = start + 0x20;
+        uint256 data = len + 0x20;
+        assembly {
+            len := mload(add(_serializedTransaction, len)) // location
+            data := add(_serializedTransaction, data)
+        }
+        return toBytes(data, len);
     }
 
     function toBytes(uint256 _ptr, uint256 _len) internal view returns (bytes) {

@@ -23,10 +23,13 @@ TransactionSerializer.prototype.serialize = (
     executionWindowLength,
     bounty,
     fee,
+    conditionalDest,
     callData,
+    conditionalCallData
 ) => {
     const encodedTransaction = coder.encode(
         [
+            'uint256',
             'address',
             'uint256',
             'uint256',
@@ -35,9 +38,12 @@ TransactionSerializer.prototype.serialize = (
             'uint256',
             'uint256',
             'uint256',
+            'address',
             'bytes',
+            'bytes'
         ],
         [
+            temporalUnit,
             recipientAddress,
             value,
             callGas,
@@ -46,11 +52,16 @@ TransactionSerializer.prototype.serialize = (
             executionWindowLength,
             bounty,
             fee,
+            conditionalDest,
             callData,
+            conditionalCallData
         ]
     )
-    const temporalUnitEncoded = temporalUnit == 1 ? '0001' : '0002'
-    return '0x' + temporalUnitEncoded + encodedTransaction.slice(2)
+
+    return encodedTransaction
+
+    // const temporalUnitEncoded = temporalUnit == 1 ? '0001' : '0002'
+    // return '0x' + temporalUnitEncoded + encodedTransaction.slice(2)
 }
 
 TransactionSerializer.prototype.deserialize = (
@@ -66,6 +77,7 @@ TransactionSerializer.prototype.deserialize = (
             'uint256',
             'uint256',
             'uint256',
+            'address',
         ],
         '0x' + bytesString.slice(6), // take off the temporal unit
     )
@@ -82,6 +94,7 @@ TransactionSerializer.prototype.deserialize = (
         executionWindowLength: decoded[5].toNumber(),
         bounty: decoded[6].toNumber(),
         fee: decoded[7].toNumber(),
+        conditionalDest: decoded[8]
     }
     
     return r
@@ -116,6 +129,8 @@ const testEncodingWithShortCallData = () => {
         50,
         60,
         70,
+        '0x7eD1E469fCb3EE19C0366D829e291451bE638E59',
+        '0x12341234',
         '0x12341234'
     )
 
@@ -134,6 +149,8 @@ const testEncodingWithLongCallData = () => {
         50,
         60,
         70,
+        '0x7eD1E469fCb3EE19C0366D829e291451bE638E59',
+        '0x' + '69123477'.repeat(20),
         '0x' + '69123477'.repeat(20)
     )
 
