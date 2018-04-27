@@ -107,10 +107,6 @@ const main = async () => {
     printLine()
     log('TEST: 100 NODES')
 
-    previousNodex = await pQueue.methods.getInsertPosition(list[11].val).call({from: web3.eth.defaultAccount})
-    tx = await pQueue.methods.insert(previousNodex, list[11].val, list[11].addr).send({from: web3.eth.defaultAccount, gas: 3000000})
-    first = tx;
-
     for (let i = 12; i < 100; i++) {
         const previousNode = await pQueue.methods.getInsertPosition(list[i].val).call({from: web3.eth.defaultAccount})
         const tx = await pQueue.methods.insert(previousNode, list[i].val, list[i].addr).send({from: web3.eth.defaultAccount, gas: 3000000})
@@ -121,7 +117,6 @@ const main = async () => {
     }
     previousNodex = await pQueue.methods.getInsertPosition(list[100].val).call({from: web3.eth.defaultAccount})
     tx = await pQueue.methods.insert(previousNodex, list[100].val, list[100].addr).send({from: web3.eth.defaultAccount, gas: 3000000})
-    log(`GAS USED FOR ELEVENTH INSERT ${first.gasUsed}`)
     log(`GAS USED FOR HUNDREDTH INSERT ${tx.gasUsed}`)
     log(`HIGHEST GAS USED DURING 100 INSERTS: ${most}`)
     log(`AVERAGE GAS USED DURING 100 INSERTS ${sum/100}`)
@@ -130,10 +125,6 @@ const main = async () => {
     printNewLine()
     printLine()
     log('TEST: 1000 NODES')
-
-    previousNodex = await pQueue.methods.getInsertPosition(list[101].val).call({from: web3.eth.defaultAccount})
-    tx = await pQueue.methods.insert(previousNodex, list[101].val, list[101].addr).send({from: web3.eth.defaultAccount, gas: 3000000})
-    first = tx;
 
     for (let i = 102; i < 1000; i++) {
         const previousNode = await pQueue.methods.getInsertPosition(list[i].val).call({from: web3.eth.defaultAccount})
@@ -145,7 +136,6 @@ const main = async () => {
     }
     previousNodex = await pQueue.methods.getInsertPosition(list[1000].val).call({from: web3.eth.defaultAccount})
     tx = await pQueue.methods.insert(previousNodex, list[1000].val, list[1000].addr).send({from: web3.eth.defaultAccount, gas: 3000000})
-    log(`GAS USED FOR HUNDERD-AND-FIRST INSERT ${first.gasUsed}`)
     log(`GAS USED FOR THOUSANDTH INSERT ${tx.gasUsed}`)
     log(`HIGHEST GAS USED DURING 1,000 INSERTS: ${most}`)
     log(`AVERAGE GAS USED DURING 1000 INSERTS ${sum/1000}`)
@@ -154,10 +144,6 @@ const main = async () => {
     printNewLine()
     printLine()
     log('TEST: 10000 NODES')
-
-    previousNodex = await pQueue.methods.getInsertPosition(list[1001].val).call({from: web3.eth.defaultAccount})
-    tx = await pQueue.methods.insert(previousNodex, list[1001].val, list[1001].addr).send({from: web3.eth.defaultAccount, gas: 3000000})
-    first = tx;
 
     for (let i = 1002; i < 10000; i++) {
         const previousNode = await pQueue.methods.getInsertPosition(list[i].val).call({from: web3.eth.defaultAccount})
@@ -169,7 +155,6 @@ const main = async () => {
     }
     previousNodex = await pQueue.methods.getInsertPosition(list[10000].val).call({from: web3.eth.defaultAccount})
     tx = await pQueue.methods.insert(previousNodex, list[10000].val, list[10000].addr).send({from: web3.eth.defaultAccount, gas: 3000000})
-    log(`GAS USED FOR THOUSAND-AND-ONE INSERT ${first.gasUsed}`)
     log(`GAS USED FOR TEN-THOUSANDTH INSERT ${tx.gasUsed}`)
     log(`HIGHEST GAS USED DURING 10,000 INSERTS: ${most}`)
     log(`AVERAGE GAS USED DURING 10,000 INSERTS ${sum/10000}`)
