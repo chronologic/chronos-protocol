@@ -129,7 +129,9 @@ contract PriorityQueue is Auth {
     function remove(bytes32 _timeNode)
         internal returns (bool)
     {
-        require(_timeNode != 0x0);
+        if (_timeNode == 0x0) { //TODO should be handled correctly
+          return true;
+        }
 
         uint256 _priority = heap.timeNodes[_timeNode].bond;
         address _tn = heap.timeNodes[_timeNode].at;
