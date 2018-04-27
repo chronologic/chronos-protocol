@@ -117,7 +117,7 @@ contract PriorityQueue is Auth {
         }
 
         if(heap.timeNodes[_idx].right != 0x0) {
-          heap.timeNodes[ heap.timeNodes[_previousNode].right ].left = _idx;
+          heap.timeNodes[ heap.timeNodes[_idx].right ].left = _idx;
         } else {
           heap.last = _idx;
           heap.minBond = _priority;
