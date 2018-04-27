@@ -104,7 +104,7 @@ contract PriorityQueue is Auth {
         require(validateInsertPosition(_previousNode,_priority));
         bytes32 _idx = keccak256(_tn,_priority,block.timestamp);// reduce posibility of overwriting
 
-        require(heap.timeNodes[_idx].at == 0x0); // Ensure no overwriting
+        assert(heap.timeNodes[_idx].at == 0x0); // Ensure no overwriting
 
         heap.timeNodes[_idx] = Timenode(_idx, _tn, _priority, _previousNode, heap.timeNodes[_previousNode].right );
         heap.size = heap.size+1;
