@@ -11,20 +11,20 @@ import "./Auth.sol";
 contract PriorityQueue is Auth {
 
     struct Timenode {
-        bytes20 id;
         address at;
+        bytes32 id;
+        bytes32 left;
+        bytes32 right;
         uint256 bond;
-        bytes20 left;
-        bytes20 right;
     }
 
     struct Queue {
+        bytes32 first;
+        bytes32 last;
         uint256 size;
-        bytes20 first;
-        bytes20 last;
         uint256 minBond;
         uint256 maxBond;
-        mapping( bytes20=>Timenode ) timeNodes;
+        mapping( bytes32=>Timenode ) timeNodes;
     }
 
     Queue heap;
@@ -49,21 +49,21 @@ contract PriorityQueue is Auth {
     }
 
     function firstNode()
-        public view returns (bytes20)
+        public view returns (bytes32)
     {
       return heap.first;
     }
 
     function lastNode()
-        public view returns (bytes20)
+        public view returns (bytes32)
     {
       return heap.last;
     }
 
-    function getTimeNode (bytes20 _timeNode)
-        public view returns (bytes20 id, address at, uint256 bond, bytes20 left, bytes20 right)
+    function getTimeNode (bytes32 _timeNode)
+        public view returns (bytes32 id, bytes32 left, bytes32 right, address at, uint256 bond)
     {
-        return (heap.timeNodes[_timeNode].id, heap.timeNodes[_timeNode].at, heap.timeNodes[_timeNode].bond, heap.timeNodes[_timeNode].left, heap.timeNodes[_timeNode].right);
+        return (heap.timeNodes[_timeNode].id, heap.timeNodes[_timeNode].left, heap.timeNodes[_timeNode].right, heap.timeNodes[_timeNode].at, heap.timeNodes[_timeNode].bond);
     }
 
     // Returns the next in the priority queue
@@ -74,14 +74,14 @@ contract PriorityQueue is Auth {
         return (heap.timeNodes[heap.first].bond, heap.timeNodes[heap.first].at);
     }
 
-    function getAtIndex(bytes20 _idx)
+    function getAtIndex(bytes32 _idx)
         public view returns (uint256, address)
     {
         if (heap.timeNodes[_idx].at == 0x0) return;
         return (heap.timeNodes[_idx].bond, heap.timeNodes[_idx].at);
     }
 
-    function validateInsertPosition( bytes20 _previousNode, uint256 _priority)
+    function validateInsertPosition( bytes32 _previousNode, uint256 _priority)
         public view returns (bool)
      {
         if(_previousNode != 0x0){
@@ -97,16 +97,16 @@ contract PriorityQueue is Auth {
         return true;
     }
 
-    function insert(bytes20 _previousNode,uint256 _priority, address _tn)
+    function insert(bytes32 _previousNode,uint256 _priority, address _tn)
         auth
         public returns (bool)
     {
         require(validateInsertPosition(_previousNode,_priority));
-        bytes20 _idx = ripemd160(_tn,_priority,block.timestamp);// reduce posibility of overwriting
+        bytes32 _idx = keccak256(_tn,_priority,block.timestamp);// reduce posibility of overwriting
 
         assert(heap.timeNodes[_idx].at == 0x0); // Ensure no overwriting
 
-        heap.timeNodes[_idx] = Timenode(_idx, _tn, _priority, _previousNode, heap.timeNodes[_previousNode].right );
+        heap.timeNodes[_idx] = Timenode(_tn, _idx, _previousNode, heap.timeNodes[_previousNode].right, _priority );
         heap.size = heap.size+1;
 
         if(heap.timeNodes[_idx].left != 0x0) {
@@ -126,7 +126,7 @@ contract PriorityQueue is Auth {
         return true;
     }
 
-    function remove(bytes20 _timeNode)
+    function remove(bytes32 _timeNode)
         internal returns (bool)
     {
         require(_timeNode != 0x0);
@@ -167,7 +167,7 @@ contract PriorityQueue is Auth {
     }
 
     function getInsertPosition(uint256 _bond)
-        public view returns (bytes20 _previousNode)
+        public view returns (bytes32 _previousNode)
     { //Should only be called from JS using(.call), to ensure maximum gasOptimization
         if (_bond > heap.maxBond) {
           return 0;
@@ -183,9 +183,9 @@ contract PriorityQueue is Auth {
     }
 
     function percUp (uint256 _bond)
-        public view returns (bytes20 _previousNode)
+        public view returns (bytes32 _previousNode)
     {
-        bytes20 activeNode = heap.timeNodes[heap.last].left;
+        bytes32 activeNode = heap.timeNodes[heap.last].left;
         for ( uint256 i = heap.size-2; i>0; i--) {
           if( activeNode == 0x0) { //If it reaches the top of the queue, should never happen
             return 0;
@@ -198,9 +198,9 @@ contract PriorityQueue is Auth {
     }
 
     function percDown (uint256 _bond)
-        public view returns (bytes20 _previousNode)
+        public view returns (bytes32 _previousNode)
     {
-      bytes20 activeNode = heap.first;
+      bytes32 activeNode = heap.first;
       for ( uint256 i = 0; i < heap.size; i++) {
         if( activeNode == 0x0) { //If it reaches the end of the queue, should never happen
           return heap.last;
