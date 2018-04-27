@@ -18,16 +18,16 @@ Following that the rest of the bytes are simply the
 ABI encoding of the parameters that will be sent, in order.
 
 bytes   1 - 32   -  temporalUnit
-bytes   3 - 64   -  recipient
-bytes  35 - 96   -  value
-bytes  67 - 128  -  callGas
-bytes  99 - 160  -  gasPrice
-bytes 131 - 192  -  executionWindowStart
-bytes 163 - 224  -  executionWindowLength
-bytes 195 - 256  -  bounty
-bytes 227 - 282  -  fee
-bytes 259 - 314  -  conditionDest
-bytes 291 - 346  -  callData loc
-bytes 323 - 378  -  conditionCallData loc
+bytes  33 - 64   -  recipient
+bytes  65 - 96   -  value
+bytes  97 - 128  -  callGas
+bytes 129 - 160  -  gasPrice
+bytes 161 - 192  -  executionWindowStart
+bytes 193 - 224  -  executionWindowLength
+bytes 225 - 256  -  bounty
+bytes 257 - 288  -  fee
+bytes 289 - 320  -  conditionDest
+bytes 321 - 352  -  callData loc
+bytes 353 - 384  -  conditionCallData loc
 bytes ... - ...  -  callData
 bytes ... - ...  -  conditionCallData

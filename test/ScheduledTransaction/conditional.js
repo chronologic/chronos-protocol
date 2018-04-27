@@ -13,12 +13,9 @@ const ScheduledTransaction = artifacts.require('ScheduledTransaction.sol')
 const ConditionDestination = artifacts.require('ConditionDestination.sol')
 
 /** Helper Scripts */
-const ipfsNode = require('../../scripts/ipfsNode')
 const Serializer = require('../../scripts/serializeTransaction')
 
 /** Third party imports */
-const b58 = require('base-58')
-const { waitUntilBlock } = require('@digix/tempo')(web3)
 const ethers = require('ethers')
 const coder = new ethers.utils.AbiCoder()
 
@@ -27,203 +24,164 @@ require('chai').use(require('chai-as-promised')).should()
 const { expect } = require('chai')
 
 /** Tests */
-contract("ScheduledTransaction__execution", (accounts)=> {
+contract('ScheduledTransaction__canExecute', (accounts) => {
+  // contract instances
+  let eventEmitter
+  let ipfs
+  let scheduler
+  let scheduledTransactionCore
+  let conditionDestination
 
-    // contract instances
-    let eventEmitter
-    let ipfs
-    let scheduler
-    let scheduledTransactionCore
-    let conditionDestination
-    
-    // ipfsNode
-    let node
+  // serializer
+  const serializer = new Serializer()
 
-    // serializer
-    const serializer = new Serializer()
-
-    // helper funcs
-    const getBlockNumber = () => {
-        return new Promise(resolve => {
-            web3.eth.getBlockNumber((err,res) => {
-                resolve(res)
-            })
-        })
-    }
-    const getLatestNewTransaction = () => {
-        return new Promise(resolve => {
-            eventEmitter.allEvents().get((err,res) => {
-                resolve(res[res.length-1].args.newTransaction)
-            })
-        })
-    }
-
-    before(async() => {
-        // deploy new instances of contracts
-        eventEmitter = await EventEmitter.new()
-        ipfs = await IPFS.new()
-        scheduledTransactionCore = await ScheduledTransaction.new()
-        scheduler = await Scheduler.new(
-            eventEmitter.address,
-            '0x0',
-            ipfs.address,
-            scheduledTransactionCore.address,
-        )
-
-        node = await ipfsNode.startNode()
-        conditionDestination = await ConditionDestination.new()
+  // helper funcs
+  const getBlockNumber = () => new Promise((resolve) => {
+    web3.eth.getBlockNumber((err, res) => {
+      resolve(res)
     })
+  })
+  const getLatestNewTransaction = () => new Promise((resolve) => {
+    eventEmitter.allEvents().get((err, res) => {
+      resolve(res[res.length - 1].args.newTransaction)
+    })
+  })
 
-    function splitNChars(txt, num) {
-        var result = [];
-        for (var i = 0; i < txt.length; i += num) {
-          result.push(txt.substr(i, num));
-        }
-        return result;
+  before(async () => {
+    // deploy new instances of contracts
+    eventEmitter = await EventEmitter.new()
+    ipfs = await IPFS.new()
+    scheduledTransactionCore = await ScheduledTransaction.new()
+    scheduler = await Scheduler.new(
+      eventEmitter.address,
+      '0x0',
+      ipfs.address,
+      scheduledTransactionCore.address,
+    )
+    conditionDestination = await ConditionDestination.new()
+  })
+
+  const scheduleWithCondition = async(conditionDest, conditionCallData) => {
+    // schedule a new transaction
+    const blockNumber = await getBlockNumber()
+
+    // set up params
+    const recipient = '0x7eD1E469fCb3EE19C0366D829e291451bE638E59'
+    const value = web3.toWei('20', 'gwei')
+    const callGas = 2000000
+    const gasPrice = web3.toWei('2', 'gwei')
+    const executionWindowStart = blockNumber + 40
+    const executionWindowLength = 10
+    const bounty = web3.toWei('30', 'gwei')
+    const fee = web3.toWei('10', 'gwei')
+    const callData = '0x12345678'
+
+    // calculate the endowment to send
+    const calcEndowment = (val, cg, gp, b, f) => parseInt(val) + parseInt(cg) * parseInt(gp) + parseInt(b) + parseInt(f)
+
+    const endowment = calcEndowment(
+      value,
+      callGas,
+      gasPrice,
+      bounty,
+      fee,
+    )
+
+    // serialize the params
+    const serializedParams = serializer.serialize(
+      1,
+      recipient,
+      value,
+      callGas,
+      gasPrice,
+      executionWindowStart,
+      executionWindowLength,
+      bounty,
+      fee,
+      conditionDest,
+      callData,
+      conditionCallData
+    )
+
+    // schedule a transaction using the serializedParams
+    const tx = await scheduler.schedule(
+      serializedParams,
+      {
+        from: accounts[2],
+        value: endowment, // TODO tests which check the correct endowment is supplied
       }
+    )
 
-    const scheduleWithCondition = async (conditionalDest, conditionalCallData) => {
-        // schedule a new transaction
-        const blockNumber = await getBlockNumber()
+    expect(tx.receipt.status).to.be.oneOf(['0x01', 1])
 
-        // set up params
-        const recipient = '0x7eD1E469fCb3EE19C0366D829e291451bE638E59'
-        const value = web3.toWei('20', 'gwei')
-        const callGas = 2000000
-        const gasPrice = web3.toWei('2', 'gwei')
-        const executionWindowStart = blockNumber + 40
-        const executionWindowLength = 10
-        const bounty = web3.toWei('30', 'gwei')
-        const fee = web3.toWei('10', 'gwei')
-        const callData = "0x12345678"
+    return serializedParams
+  }
 
-        // calculate the endowment to send
-        const calcEndowment = (val, cg, gp, b, f) => {
-            return parseInt(val) + parseInt(cg) * parseInt(gp) + parseInt(b) + parseInt(f)
-        }
+  const deployConditionalTransaction = async (conditionCallData, conditionAddress) => {
+    const scheduleArguments = await scheduleWithCondition(conditionAddress || conditionDestination.address, conditionCallData)
+    const newTransaction = await getLatestNewTransaction()
+    const scheduledTransaction = await ScheduledTransaction.at(newTransaction)
 
-        const endowment = calcEndowment(
-            value,
-            callGas,
-            gasPrice,
-            bounty,
-            fee,
-        )
+    return scheduledTransaction.canExecute(scheduleArguments)
+  }
 
-        // serialize the params
-        const serializedParams = serializer.serialize(
-            1,
-            recipient,
-            value,
-            callGas,
-            gasPrice,
-            executionWindowStart,
-            executionWindowLength,
-            bounty,
-            fee,
-            conditionalDest,
-            callData,
-            conditionalCallData
-        )
+  const encodeMethod = (signature) => {
+      return web3.sha3(signature).slice(0, 10)
+  }
 
-        console.log(splitNChars(serializedParams.slice(2), 64))
+  const encodeIsGreater = (a, b) => {
+    const method = encodeMethod('isGreater(uint256,uint256)')
+    const values = coder.encode(['uint', 'uint'], [a, b]).slice(2)
+    return method + values
+  }
 
-        // use the ipfsNode to add this encoded hex string
-        const actualIpfsHash = await ipfsNode.addString(
-            node,
-            Buffer.from(serializedParams.slice(2), 'hex')
-        )
+  const encodeInRange = (v, l, r) => {
+    const method = encodeMethod('inRange(uint256,uint256,uint256)')
+    const values = coder.encode(['uint', 'uint', 'uint'], [v, l, r]).slice(2)
+    return method + values
+  }
 
-        // schedule a transaction using the serializedParams
-        const tx = await scheduler.schedule(
-            serializedParams,
-            {
-                from: accounts[2],
-                value: endowment, //TODO tests which check the correct endowment is supplied
-            }
-        )
+  it('canExecute is true as deafult when no condition has been set', async () => {
+    const result = await deployConditionalTransaction('0x', '0x0000000000000000000000000000000000000000')
 
-        expect(tx.receipt.status).to.be.oneOf(['0x01', 1])
-    }
+    expect(result).to.be.true
+  })
 
-    it('getCallData', async() => {
-        const method = web3.sha3("isGreater(uint256,uint256)").slice(0,10)
-        const values =  coder.encode( ['uint', 'uint'], [1, 2]).slice(2)
-        const conditionalCallData = method + values
-        
-        // const data2 = coder.encode( ['uint', 'uint'], [3, 4])
-        // const joined = coder.encode(['bytes', 'bytes'], [conditionalCallData, data2])
-       
-        //console.log(joined)
-                
-        await scheduleWithCondition(conditionDestination.address, conditionalCallData)
-        const newTransaction = await getLatestNewTransaction()
-        const scheduledTransaction = await ScheduledTransaction.at(newTransaction)
+  it('canExecute is true when 5 > 4', async () => {
+    const a = 5
+    const b = 4
 
-        // const canExecute = await scheduledTransaction.getCallData(joined, 64)
-        // console.log("\n")
-        // console.log(canExecute)
+    const result = await deployConditionalTransaction(encodeIsGreater(a, b))
 
-        // grab the ipfsHash from the contract se we can find the data
-        const ipfsHash = await scheduledTransaction.ipfsHash()
+    expect(result).to.be.true
+  })
 
-        // the hash is raw, so we need to format it
-        const formattedHash = b58.encode(
-            Buffer.from('1220' + ipfsHash.slice(2), 'hex')
-        )
+  it('canExecute is false when 4 > 5', async () => {
+    const a = 4
+    const b = 5
 
-        // get the data from the ipfsNode
-        const bytes = await ipfsNode.getString(node, formattedHash)
+    const result = await deployConditionalTransaction(encodeIsGreater(a, b))
 
-        // convert to hex and add back the '0x'
-        const data = '0x' + bytes.toString('hex')
-        console.log("\n")
-        console.log(splitNChars(data.slice(2), 64))
-        
-        const canExecute = await scheduledTransaction.getCallData(data, 378)
-        console.log("\n")
-        console.log(canExecute)
-    })
+    expect(result).to.be.false
+  })
 
-    // it('confirm canExecute', async() => {
-    //     const a = 5
-    //     const b = 4
-        
-    //     const method = web3.sha3("isGreater(uint256,uint256)").slice(0,10)
-    //     const values =  coder.encode( ['uint', 'uint'], [a, b]).slice(2)
-    //     const conditionalCallData = method + values
+  it('canExecute is true when 3 < 4 < 5', async () => {
+    const v = 4
+    const l = 3
+    const r = 5
 
-    //     await scheduleWithCondition(conditionDestination.address, conditionalCallData)
-    //     const newTransaction = await getLatestNewTransaction()
-    //     const scheduledTransaction = await ScheduledTransaction.at(newTransaction)
-        
-    //     // grab the ipfsHash from the contract se we can find the data
-    //     const ipfsHash = await scheduledTransaction.ipfsHash()
+    const result = await deployConditionalTransaction(encodeInRange(v, l, r))
 
-    //     // the hash is raw, so we need to format it
-    //     const formattedHash = b58.encode(
-    //         Buffer.from('1220' + ipfsHash.slice(2), 'hex')
-    //     )
+    expect(result).to.be.true
+  })
 
-    //     // get the data from the ipfsNode
-    //     const bytes = await ipfsNode.getString(node, formattedHash)
+  it('canExecute is true when 3 < 10 < 5', async () => {
+    const v = 10
+    const l = 3
+    const r = 5
 
-    //     // convert to hex and add back the '0x'
-    //     const data = '0x' + bytes.toString('hex')
+    const result = await deployConditionalTransaction(encodeInRange(v, l, r))
 
-    //     console.log(data)
-
-    //     const canExecute = await scheduledTransaction.getCallData(data, 322)
-    //     expect(canExecute).is.true
-
-    //     // await scheduledTransaction.execute(data, {
-    //     //     from: accounts[4],
-    //     //     gasPrice: decoded.gasPrice,
-    //     //     gas: 3000000
-    //     // }).should.be.rejectedWith('VM Exception while processing transaction: revert')
-    // })
-
-    after(async() => {
-        await ipfsNode.shutdown(node)
-    })
+    expect(result).to.be.false
+  })
 })

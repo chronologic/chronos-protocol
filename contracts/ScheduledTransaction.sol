@@ -106,16 +106,16 @@ contract ScheduledTransaction {
         address conditionalDest;
 
         assembly {
-            conditionalDest := mload(add(_serializedTransaction, 290))
+            conditionalDest := mload(add(_serializedTransaction, 320))
         }
 
         if (conditionalDest == 0x0) { //no conditional data
             return true;
         }
 
-        bytes memory conditionalCallData = getCallData(_serializedTransaction, 354);
+        bytes memory conditionalCallData = getCallData(_serializedTransaction, 384);
 
-        return true; //callWithData(conditionalDest, conditionalCallData) == 1;
+        return callWithData(conditionalDest, conditionalCallData) == 1;
     }
 
     function execute(bytes _serializedTransaction)
@@ -137,17 +137,17 @@ contract ScheduledTransaction {
 
         assembly {
             temporalUnit := mload(add(_serializedTransaction, 32))
-            recipient := mload(add(_serializedTransaction, 34))
-            value := mload(add(_serializedTransaction,66))
-            callGas := mload(add(_serializedTransaction, 98))
-            gasPrice := mload(add(_serializedTransaction, 130))
-            executionWindowStart := mload(add(_serializedTransaction, 162))
-            executionWindowLength := mload(add(_serializedTransaction, 194))
-            bounty := mload(add(_serializedTransaction, 226))
-            fee := mload(add(_serializedTransaction, 258))
+            recipient := mload(add(_serializedTransaction, 64))
+            value := mload(add(_serializedTransaction, 96))
+            callGas := mload(add(_serializedTransaction, 128))
+            gasPrice := mload(add(_serializedTransaction, 160))
+            executionWindowStart := mload(add(_serializedTransaction, 192))
+            executionWindowLength := mload(add(_serializedTransaction, 224))
+            bounty := mload(add(_serializedTransaction, 256))
+            fee := mload(add(_serializedTransaction, 288))
         }
 
-        bytes memory callData = getCallData(_serializedTransaction, 324);
+        bytes memory callData = getCallData(_serializedTransaction, 352);
 
         // check gasleft() >= requiredGas
         require(gasleft() >= callGas + 180000 - 25000);
@@ -201,7 +201,7 @@ contract ScheduledTransaction {
     }
 
     function getCallData(bytes _serializedTransaction, uint _startLoc) 
-        public view returns (bytes)
+        private view returns (bytes)
     {
         uint256 start;
         assembly {
