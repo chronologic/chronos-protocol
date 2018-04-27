@@ -75,7 +75,9 @@ const main = async () => {
     }
 
     const list = buildList(10000)
+
     let most = 0
+    let sum = 0
 
     printNewLine()
     printLine()
@@ -85,10 +87,12 @@ const main = async () => {
         if (parseInt(tx.gasUsed) > most) {
             most = parseInt(tx.gasUsed)
         }
+        sum += parseInt(tx.gasUsed)
     }
     let tx = await pQueue.methods.insert(list[10].val, list[10].addr).send({from: web3.eth.defaultAccount, gas: 3000000})
     log(`GAS USED FOR TENTH INSERT ${tx.gasUsed}`)
     log(`HIGHEST GAS USED DURING 10 INSERTS: ${most}`)
+    log(`AVERAGE GAS USED DURING 10 INSERTS ${sum/10}`)
     printLine()
 
     printNewLine()
@@ -99,10 +103,12 @@ const main = async () => {
         if (parseInt(tx.gasUsed) > most) {
             most = parseInt(tx.gasUsed)
         }
+        sum += parseInt(tx.gasUsed)
     }
     tx = await pQueue.methods.insert(list[100].val, list[100].addr).send({from: web3.eth.defaultAccount, gas: 3000000})
     log(`GAS USED FOR HUNDREDTH INSERT ${tx.gasUsed}`)
     log(`HIGHEST GAS USED DURING 100 INSERTS: ${most}`)
+    log(`AVERAGE GAS USED DURING 100 INSERTS ${sum/100}`)
     printLine()
 
     printNewLine()
@@ -113,10 +119,12 @@ const main = async () => {
         if (parseInt(tx.gasUsed) > most) {
             most = parseInt(tx.gasUsed)
         }
+        sum += parseInt(tx.gasUsed)
     }
     tx = await pQueue.methods.insert(list[1000].val, list[1000].addr).send({from: web3.eth.defaultAccount, gas: 3000000})
     log(`GAS USED FOR THOUSANDTH INSERT ${tx.gasUsed}`)
     log(`HIGHEST GAS USED DURING 1,000 INSERTS: ${most}`)
+    log(`AVERAGE GAS USED DURING 1000 INSERTS ${sum/1000}`)
     printLine()
 
     printNewLine()
@@ -127,14 +135,68 @@ const main = async () => {
         if (parseInt(tx.gasUsed) > most) {
             most = parseInt(tx.gasUsed)
         }
+        sum += parseInt(tx.gasUsed)
     }
     tx = await pQueue.methods.insert(list[10000].val, list[10000].addr).send({from: web3.eth.defaultAccount, gas: 3000000})
     log(`GAS USED FOR TEN-THOUSANDTH INSERT ${tx.gasUsed}`)
     log(`HIGHEST GAS USED DURING 10,000 INSERTS: ${most}`)
+    log(`AVERAGE GAS USED DURING 10,000 INSERTS ${sum/10000}`)
     printLine()
 
 
+    let popMost = 0
+    let popSum = 0
 
+    printNewLine()
+    printLine() 
+    for (let i = 0; i < 10; i++) {
+        const tx = await pQueue.methods.pop().send({from: web3.eth.defaultAccount, gas:3000000})
+        if (parseInt(tx.gasUsed) > popMost) {
+            popMost = parseInt(tx.gasUsed)
+        }
+        popSum += parseInt(tx.gasUsed)
+    }
+    log(`HIGHEST GAS USED DURING 10 POPS: ${popMost}`)
+    log(`AVERAGE GAS USED DURING 10 POPS ${popSum/10}`)
+
+    printLine()
+    printNewLine()
+    printLine()
+    for (let i = 10; i < 100; i++) {
+        const tx = await pQueue.methods.pop().send({from: web3.eth.defaultAccount, gas:3000000})
+        if (parseInt(tx.gasUsed) > popMost) {
+            popMost = parseInt(tx.gasUsed)
+        }
+        popSum += parseInt(tx.gasUsed)
+    }
+    log(`HIGHEST GAS USED DURING 100 POPS: ${popMost}`)
+    log(`AVERAGE GAS USED DURING 100 POPS ${popSum/100}`)
+    
+    printLine()
+    printNewLine()
+    printLine()
+    for (let i = 100; i < 1000; i++) {
+        const tx = await pQueue.methods.pop().send({from: web3.eth.defaultAccount, gas:3000000})
+        if (parseInt(tx.gasUsed) > popMost) {
+            popMost = parseInt(tx.gasUsed)
+        }
+        popSum += parseInt(tx.gasUsed)
+    }
+    log(`HIGHEST GAS USED DURING 1000 POPS: ${popMost}`)
+    log(`AVERAGE GAS USED DURING 1000 POPS ${popSum/1000}`)
+
+    printLine()
+    printNewLine()
+    printLine()
+    for (let i = 1000; i < 10000; i++) {
+        const tx = await pQueue.methods.pop().send({from: web3.eth.defaultAccount, gas:3000000})
+        if (parseInt(tx.gasUsed) > popMost) {
+            popMost = parseInt(tx.gasUsed)
+        }
+        popSum += parseInt(tx.gasUsed)
+    }
+    log(`HIGHEST GAS USED DURING 10,000 POPS: ${popMost}`)
+    log(`AVERAGE GAS USED DURING 10,000 POPS ${popSum/10000}`)
 }
 
 main()
