@@ -23,49 +23,24 @@ contract ConditionalTransaction {
         return true;
     }
     
-    function callWithData(address dest, bytes data) private constant returns (bytes32 c) {
-        uint dataLoc;
-        uint dataLen = data.length;
-        uint free;
-        
-        assembly { 
-            free := mload(0x40) //Free mem pointer
-            dataLoc := add(data, 0x20) //Skip array header
-        }
-        
-        memcpy(free, dataLoc, dataLen);
-        
+    function callWithData(address dest, bytes data) private returns (bytes32 c) {
         assembly {
-            let success := call(      
-                                5000, //5k gas
-                                dest, //To addr
-                                0,    //No value
-                                free,    //Inputs are stored at location x
-                                dataLen, //Inputs are 68 bytes long
-                                free,    //Store output over input (saves space)
-                                0x20) //Outputs are 32 bytes long
+            let freemem := mload(0x40)
+            
+            pop(
+            call(      
+                5000, //5k gas
+                dest, //To addr
+                0,    //No value
+                add(data, 0x20),    //Inputs are stored at location x
+                mload(data),
+                freemem,    //Store output over input (saves space)
+                0x20 //Outputs are 32 bytes long
+            )
+            )
     
-            c := mload(free) //Assign output value to c
-            mstore(0x40,add(free,dataLen)) // Set storage pointer to empty space
-        }
-    }
-    
-    function memcpy(uint dest, uint src, uint len) private {
-        // Copy word-length chunks while possible
-        for(; len >= 32; len -= 32) {
-            assembly {
-                mstore(dest, mload(src))
-            }
-            dest += 32;
-            src += 32;
-        }
-
-        // Copy remaining bytes
-        uint mask = 256 ** (32 - len) - 1;
-        assembly {
-            let srcpart := and(mload(src), not(mask))
-            let destpart := and(mload(dest), mask)
-            mstore(dest, or(destpart, srcpart))
+            c := mload(freemem) //Assign output value to c
+            mstore(0x40, add(freemem, 0x20)) // Set storage pointer to empty space
         }
     }
 }
