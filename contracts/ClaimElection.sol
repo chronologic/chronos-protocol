@@ -28,7 +28,7 @@ contract ClaimElection is Auth {
     // Timenode cooldown
     mapping (address => uint256) cooldown;
 
-    function joinQueue(uint256 _amt, bytes32 _pos)
+    function joinQueue(uint256 _amt, bytes8 _pos)
         public returns (bool success)
     {
         uint256 tokenBal = token.balanceOf(msg.sender);
