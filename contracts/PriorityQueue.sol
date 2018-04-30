@@ -31,42 +31,66 @@ contract PriorityQueue is Auth {
 
     event Enter(uint256 val, address addr);
     event Exit(uint256 val, address addr);
-    event POP(uint256 val, address addr);
+    event Pop(uint256 val, address addr);
 
-    function PriorityQueue() public {}
+    // function PriorityQueue() public {}
 
-    // Return true if the priority queue is empty
+    /**
+	 * isEmpty()
+	 * Returns <bool> true if the PriorityQueue is empty.
+	 */
     function isEmpty()
         public view returns (bool)
     {
         return heap.size == 0;
     }
 
+    /**
+	 * queueSize()
+	 * Returns <uint256> number of nodes in the PriorityQueue.
+	 */
     function queueSize()
         public view returns (uint256)
     {
       return heap.size;
     }
 
+	/**
+	 * firstNode()
+	 * Returns <bytes8> UUID of the next node in the PriorityQueue.
+	 */
     function firstNode()
         public view returns (bytes8)
     {
       return heap.first;
     }
 
+	/**
+	 * lastNode()
+	 * Returns <bytes8> UUID of the last node in the PriorityQueue.
+	 */
     function lastNode()
         public view returns (bytes8)
     {
       return heap.last;
     }
 
-    function getTimeNode (bytes8 _timeNode)
+	/**
+	 * getTimenode() 
+	 * Returns <(bytes8, bytes8, bytes8, address, uint256)> tuple containing the UUID, 
+	 * left node, right node, address of, and bond value of the Timenode.
+	 */
+    function getTimenode (bytes8 _timeNode)
         public view returns (bytes8 id, bytes8 left, bytes8 right, address at, uint256 bond)
     {
         return (heap.timeNodes[_timeNode].id, heap.timeNodes[_timeNode].left, heap.timeNodes[_timeNode].right, heap.timeNodes[_timeNode].at, heap.timeNodes[_timeNode].bond);
     }
 
-    // Returns the next in the priority queue
+    /**
+	 * peek()
+	 * Returns <(uint256, address)> tuple containing the bond value and address of the
+	 * first Timenode in the PriorityQueue.
+	 */
     function peek()
         public view returns (uint256, address)
     {
@@ -74,6 +98,11 @@ contract PriorityQueue is Auth {
         return (heap.timeNodes[heap.first].bond, heap.timeNodes[heap.first].at);
     }
 
+	/**
+	 * getAtIndex(<bytes8>)
+	 * Returns <(uint256, address)> tuple containg the bond value and address
+	 * of the node at index `_idx`.
+	 */
     function getAtIndex(bytes8 _idx)
         public view returns (uint256, address)
     {
@@ -81,28 +110,41 @@ contract PriorityQueue is Auth {
         return (heap.timeNodes[_idx].bond, heap.timeNodes[_idx].at);
     }
 
-    function validateInsertPosition( bytes8 _previousNode, uint256 _priority)
+	/**
+	 * validateInsertPosition(<bytes8, uint256>)
+	 * Returns <bool> True if the this is the correct insert placement of the _priority value.
+	 */
+    function validateInsertPosition(bytes8 _previousNode, uint256 _priority)
         public view returns (bool)
      {
-        if(_previousNode != 0x0){
-          require(heap.timeNodes[_previousNode].bond >= _priority);
-          if ( _previousNode != heap.last) {
-            require(heap.timeNodes[ heap.timeNodes[_previousNode].right ].bond < _priority);
-          }
-        } else {
-          if(heap.first != 0x0) {
-            require(heap.timeNodes[heap.first].bond < _priority); //Ensure older nodes, with same bond remain at the top of the line
-          }
+        if (_previousNode != 0x0) {
+			// If trying to insert at position not at index 0, require _priority <= previous bond value.
+			require(heap.timeNodes[_previousNode].bond >= _priority);
+			if (_previousNode != heap.last) {
+				bytes8 rightNode = heap.timeNodes[_previousNode].right;
+				// Always place a new insert behind the ones before it by requiring the _priority
+				// is greater than the right node's bond value.
+				require(heap.timeNodes[rightNode].bond < _priority);
+			}
+        } else { // if _previousNode === 0x0, i.e. try insert at index 0.
+			if(heap.first != 0x0) {
+				 //Ensure older nodes, with same bond value remain at the top of the line.
+				require(heap.timeNodes[heap.first].bond < _priority);
+			}
         }
         return true;
     }
 
-    function insert(bytes8 _previousNode,uint256 _priority, address _tn)
+	/**
+	 * insert(<bytes8, uint256, address>) 
+	 * Returns <bool> True if the insert is successful. 
+	 */
+    function insert(bytes8 _previousNode, uint256 _priority, address _tn)
         auth
         public returns (bool)
     {
         require(validateInsertPosition(_previousNode,_priority));
-        bytes8 _idx = bytes8(keccak256(_tn,_priority,block.timestamp));// reduce posibility of overwriting
+        bytes8 _idx = bytes8(keccak256(_tn, _priority, block.timestamp));// reduce posibility of overwriting
 
         assert(heap.timeNodes[_idx].at == 0x0); // Ensure no overwriting
 
@@ -164,7 +206,7 @@ contract PriorityQueue is Auth {
     {
         (retVal, retAddr) = peek();
         assert(remove(heap.first));
-        emit POP(retVal, retAddr);
+        emit Pop(retVal, retAddr);
         // retVal returns
     }
 
@@ -172,15 +214,20 @@ contract PriorityQueue is Auth {
         public view returns (bytes8 _previousNode)
     { //Should only be called from JS using(.call), to ensure maximum gasOptimization
         if (_bond > heap.maxBond) {
-          return 0;
+			//highest bond will be inserted in index 0
+          	return 0;
         }
         if (_bond <= heap.minBond) {
-          return heap.last;
+			//lowest bond inserted into last index
+          	return heap.last;
         }
-        if ( (((heap.maxBond - heap.minBond)/2) + heap.minBond) > _bond ){
-          return percUp(_bond);
+		
+		// find middle
+		uint256 mid = (heap.maxBond - heap.minBond) /2;
+        if ((mid + heap.minBond) > _bond ) {
+          	return percUp(_bond);
         } else {
-          return percDown(_bond);
+          	return percDown(_bond);
         }
     }
 
@@ -188,29 +235,29 @@ contract PriorityQueue is Auth {
         public view returns (bytes8 _previousNode)
     {
         bytes8 activeNode = heap.timeNodes[heap.last].left;
-        for ( uint256 i = heap.size-2; i>0; i--) {
-          if( activeNode == 0x0) { //If it reaches the top of the queue, should never happen
-            return 0;
-          }
-          if ( heap.timeNodes[activeNode].bond >= _bond) {
-            return activeNode;
-          }
-          activeNode = heap.timeNodes[activeNode].left;
+        for (uint256 i = heap.size-2; i>0; i--) {
+          	if(activeNode == 0x0) { //If it reaches the top of the queue, should never happen
+            	return 0;
+          	}
+          	if (heap.timeNodes[activeNode].bond >= _bond) {
+            	return activeNode;
+          	}
+          	activeNode = heap.timeNodes[activeNode].left;
         }
     }
 
     function percDown (uint256 _bond)
         public view returns (bytes8 _previousNode)
     {
-      bytes8 activeNode = heap.first;
-      for ( uint256 i = 0; i < heap.size; i++) {
-        if( activeNode == 0x0) { //If it reaches the end of the queue, should never happen
-          return heap.last;
-        }
-        if ( heap.timeNodes[activeNode].bond < _bond) {
-          return heap.timeNodes[activeNode].left;
-        }
-        activeNode = heap.timeNodes[activeNode].right;
-      }
+      	bytes8 activeNode = heap.first;
+      	for (uint256 i = 0; i < heap.size; i++) {
+			if(activeNode == 0x0) { //If it reaches the end of the queue, should never happen
+				return heap.last;
+			}
+			if (heap.timeNodes[activeNode].bond < _bond) {
+				return heap.timeNodes[activeNode].left;
+			}
+			activeNode = heap.timeNodes[activeNode].right;
+		}
     }
 }
