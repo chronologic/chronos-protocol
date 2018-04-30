@@ -73,7 +73,7 @@ contract ScheduledTransaction {
     }
 
     function checkInExecutionWindow(
-        bytes2 temporalUnit,
+        uint256 temporalUnit,
         uint256 executionWindowStart,
         uint256 executionWindowLength
     ) private view returns (bool) {
@@ -91,7 +91,7 @@ contract ScheduledTransaction {
     }
 
     function checkSecondHalfOfExecutionWindow(
-        bytes2 temporalUnit,
+        uint256 temporalUnit,
         uint256 executionWindowStart,
         uint256 executionWindowLength
     ) private view returns (bool) {
@@ -125,7 +125,7 @@ contract ScheduledTransaction {
         require(checkHash(_serializedTransaction));
         require(canExecute(_serializedTransaction));
 
-        bytes2 temporalUnit;
+        uint256 temporalUnit;
         address recipient;
         uint256 value;
         uint256 callGas;
