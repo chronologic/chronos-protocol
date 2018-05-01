@@ -82,7 +82,9 @@ contract("ScheduledTransaction__execution", (accounts)=> {
         const executionWindowLength = 10
         const bounty = web3.toWei('30', 'gwei')
         const fee = web3.toWei('10', 'gwei')
+        const conditionalDest = '0x0000000000000000000000000000000000000000'
         const callData = "0x" + "1337".repeat(32)
+        const conditionalCallData = '0x'
 
         // calculate the endowment to send
         const calcEndowment = (val, cg, gp, b, f) => {
@@ -108,7 +110,9 @@ contract("ScheduledTransaction__execution", (accounts)=> {
             executionWindowLength,
             bounty,
             fee,
+            conditionalDest,
             callData,
+            conditionalCallData
         )
 
         // use the ipfsNode to add this encoded hex string

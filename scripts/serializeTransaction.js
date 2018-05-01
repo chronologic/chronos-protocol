@@ -4,6 +4,7 @@ const coder = new ethers.utils.AbiCoder()
 const TransactionSerializer = function () {}
 
 /**
+ * Uint256 - TemporalUnit
  * Address - Recipient
  * Uint256 - Value
  * Uint256 - CallGas
@@ -23,10 +24,13 @@ TransactionSerializer.prototype.serialize = (
     executionWindowLength,
     bounty,
     fee,
+    conditionalDest,
     callData,
+    conditionalCallData
 ) => {
-    const encodedTransaction = coder.encode(
+    return coder.encode(
         [
+            'uint256',
             'address',
             'uint256',
             'uint256',
@@ -35,9 +39,12 @@ TransactionSerializer.prototype.serialize = (
             'uint256',
             'uint256',
             'uint256',
+            'address',
             'bytes',
+            'bytes'
         ],
         [
+            temporalUnit,
             recipientAddress,
             value,
             callGas,
@@ -46,18 +53,17 @@ TransactionSerializer.prototype.serialize = (
             executionWindowLength,
             bounty,
             fee,
+            conditionalDest,
             callData,
+            conditionalCallData
         ]
     )
-    const temporalUnitEncoded = temporalUnit == 1 ? '0001' : '0002'
-    return '0x' + temporalUnitEncoded + encodedTransaction.slice(2)
 }
 
-TransactionSerializer.prototype.deserialize = (
-    bytesString
-) => {
+TransactionSerializer.prototype.deserialize = (byteString) => {
     const decoded = coder.decode(
         [
+            'uint256',
             'address',
             'uint256',
             'uint256',
@@ -66,25 +72,23 @@ TransactionSerializer.prototype.deserialize = (
             'uint256',
             'uint256',
             'uint256',
+            'address',
         ],
-        '0x' + bytesString.slice(6), // take off the temporal unit
+        byteString // take off the temporal unit
     )
 
-    const decodedTemporalUnit = bytesString.slice(2, 6) == '0001' ? 1 : 2
-    
-    const r = {
-        temporalUnit: decodedTemporalUnit,
-        recipient: decoded[0],
-        value: decoded[1].toNumber(),
-        callGas: decoded[2].toNumber(),
-        gasPrice: decoded[3].toNumber(),
-        executionWindowStart: decoded[4].toNumber(),
-        executionWindowLength: decoded[5].toNumber(),
-        bounty: decoded[6].toNumber(),
-        fee: decoded[7].toNumber(),
+    return {
+        temporalUnit: decoded[0],
+        recipient: decoded[1],
+        value: decoded[2].toNumber(),
+        callGas: decoded[3].toNumber(),
+        gasPrice: decoded[4].toNumber(),
+        executionWindowStart: decoded[5].toNumber(),
+        executionWindowLength: decoded[6].toNumber(),
+        bounty: decoded[7].toNumber(),
+        fee: decoded[8].toNumber(),
+        conditionalDest: decoded[9]
     }
-    
-    return r
 }
 
 // const testEncoding = () => {
@@ -116,6 +120,8 @@ const testEncodingWithShortCallData = () => {
         50,
         60,
         70,
+        '0x7eD1E469fCb3EE19C0366D829e291451bE638E59',
+        '0x12341234',
         '0x12341234'
     )
 
@@ -134,6 +140,8 @@ const testEncodingWithLongCallData = () => {
         50,
         60,
         70,
+        '0x7eD1E469fCb3EE19C0366D829e291451bE638E59',
+        '0x' + '69123477'.repeat(20),
         '0x' + '69123477'.repeat(20)
     )
 

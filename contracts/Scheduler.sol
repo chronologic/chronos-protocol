@@ -40,26 +40,26 @@ contract Scheduler is CloneFactory {
         uint256 fee;
 
         assembly {
-            value := mload(add(_serializedTransaction, 66))
-            callGas := mload(add(_serializedTransaction, 98))
-            gasPrice := mload(add(_serializedTransaction, 130))
-            bounty := mload(add(_serializedTransaction, 226))
-            fee := mload(add(_serializedTransaction, 258))
+            value := mload(add(_serializedTransaction, 96))
+            callGas := mload(add(_serializedTransaction, 128))
+            gasPrice := mload(add(_serializedTransaction, 160))
+            bounty := mload(add(_serializedTransaction, 256))
+            fee := mload(add(_serializedTransaction, 288))
         }
-
+        
         uint endowment = value + callGas * gasPrice + bounty + fee;
         require(msg.value >= endowment);
-
+        
         bytes32 ipfsHash = IPFS(ipfs).generateHash(_serializedTransaction);
 
         scheduledTx = createTransaction();
         require(scheduledTx != 0x0);
 
-        /// Claim Logic Start
+        // Claim Logic Start
         if (!ClaimElection(claimElection).isEmpty()) {
             address nextClaimingNode = ClaimElection(claimElection).getNext();
         }
-        /// Claim Logic End
+        // Claim Logic End
 
         ScheduledTransaction(scheduledTx).init.value(msg.value)(ipfsHash, msg.sender, address(this), address(0x17B17026C423a988C3D1375252C3021ff32F354C));
 

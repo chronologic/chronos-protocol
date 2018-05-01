@@ -17,13 +17,17 @@ Ethereum blocks.
 Following that the rest of the bytes are simply the 
 ABI encoding of the parameters that will be sent, in order.
 
-(bytes 1 - 2   - temporalUnit)
-bytes   3 -  34  -  recipient
-bytes  35 -  66  -  value
-bytes  67 -  98  -  callGas
-bytes  99 - 130  -  gasPrice
-bytes 131 - 162  -  executionWindowStart
-bytes 163 - 194  -  executionWindowLength
-bytes 195 - 226  -  bounty
-bytes 227 - 258  -  fee 
-bytes 259 - ...  -  callData
+bytes   1 - 32   -  temporalUnit
+bytes  33 - 64   -  recipient
+bytes  65 - 96   -  value
+bytes  97 - 128  -  callGas
+bytes 129 - 160  -  gasPrice
+bytes 161 - 192  -  executionWindowStart
+bytes 193 - 224  -  executionWindowLength
+bytes 225 - 256  -  bounty
+bytes 257 - 288  -  fee
+bytes 289 - 320  -  conditionDest
+bytes 321 - 352  -  callData loc
+bytes 353 - 384  -  conditionCallData loc
+bytes ... - ...  -  callData
+bytes ... - ...  -  conditionCallData
