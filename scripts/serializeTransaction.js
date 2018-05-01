@@ -13,6 +13,9 @@ const TransactionSerializer = function () {}
  * Uint256 - ExecutionWindowLength
  * Uint256 - Bounty
  * Uint256 - Fee
+ * Address - ConditionalDestination
+ * Bytes   - CallData
+ * Bytes   - ConditionalCallData
  */
 TransactionSerializer.prototype.serialize = (
     temporalUnit,
@@ -73,12 +76,14 @@ TransactionSerializer.prototype.deserialize = (byteString) => {
             'uint256',
             'uint256',
             'address',
+            'bytes',
+            'bytes',
         ],
-        byteString // take off the temporal unit
+        byteString
     )
 
     return {
-        temporalUnit: decoded[0],
+        temporalUnit: decoded[0].toNumber(),
         recipient: decoded[1],
         value: decoded[2].toNumber(),
         callGas: decoded[3].toNumber(),
@@ -87,26 +92,11 @@ TransactionSerializer.prototype.deserialize = (byteString) => {
         executionWindowLength: decoded[6].toNumber(),
         bounty: decoded[7].toNumber(),
         fee: decoded[8].toNumber(),
-        conditionalDest: decoded[9]
+        conditionalDest: decoded[9],
+        callData: decoded[10],
+        conditionalCallData: decoded[11],
     }
 }
-
-// const testEncoding = () => {
-//     const transactionSerializer = new TransactionSerializer()
-//     const serialized = transactionSerializer.serialize(
-//         2,
-//         '0x7eD1E469fCb3EE19C0366D829e291451bE638E59',
-//         10,
-//         20,
-//         30,
-//         40,
-//         50,
-//         60,
-//         70,
-//     )
-
-//     return serialized
-// }
 
 const testEncodingWithShortCallData = () => {
     const transactionSerializer = new TransactionSerializer()
@@ -150,7 +140,7 @@ const testEncodingWithLongCallData = () => {
 
 const testDecoding = () => {
     const transactionSerializer = new TransactionSerializer()
-    const serialized = testEncoding()
+    const serialized = testEncodingWithLongCallData()
     const deserialized = transactionSerializer.deserialize(serialized)
     return deserialized
 }
