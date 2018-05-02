@@ -49,29 +49,6 @@ contract ScheduledTransaction {
         return checkHash == ipfsHash;
     }
 
-    function callWithData(address dest, bytes data) 
-        private returns (bytes32 c)
-    {
-        assembly {
-            let freemem := mload(0x40)
-            
-            pop(
-            call(      
-                5000, //5k gas
-                dest, //To addr
-                0,    //No value
-                add(data, 0x20),    //Inputs are stored at location x
-                mload(data),
-                freemem,    //Store output over input (saves space)
-                0x20 //Outputs are 32 bytes long
-            )
-            )
-    
-            c := mload(freemem) //Assign output value to c
-            mstore(0x40, add(freemem, 0x20)) // Set storage pointer to empty space
-        }
-    }
-
     function checkInExecutionWindow(
         uint256 temporalUnit,
         uint256 executionWindowStart,
@@ -116,6 +93,29 @@ contract ScheduledTransaction {
         bytes memory conditionalCallData = getCallData(_serializedTransaction, 384);
 
         return callWithData(conditionalDest, conditionalCallData) == 1;
+    }
+
+    function callWithData(address dest, bytes data) 
+        private returns (bytes32 c)
+    {
+        assembly {
+            let freemem := mload(0x40)
+            
+            pop(
+            call(      
+                5000, //5k gas
+                dest, //To addr
+                0,    //No value
+                add(data, 0x20),    //Inputs are stored at location x
+                mload(data),
+                freemem,    //Store output over input (saves space)
+                0x20 //Outputs are 32 bytes long
+            )
+            )
+    
+            c := mload(freemem) //Assign output value to c
+            mstore(0x40, add(freemem, 0x20)) // Set storage pointer to empty space
+        }
     }
 
     function execute(bytes _serializedTransaction)
@@ -185,19 +185,31 @@ contract ScheduledTransaction {
         successful = recipient.call.value(value).gas(callGas)(callData);
 
         // check bounty recipient, send bounty
-        address bountyRecipient = msg.sender;
-        bountyRecipient.transfer(bounty);
+        // NOTE: In a `require()` gate now, but might lift this later.
+        require(bountyPayout(msg.sender, bounty));
 
         //  check fee recipient, send fee
         address feeRecipient = Scheduler(scheduledFrom).feeRecipient();
         if (feeRecipient != 0x0) {
-            feeRecipient.transfer(fee);
+            require(feePayout(feeRecipient, fee));
         }
         
         // send remaining ether back to scheduler
         owner.transfer(address(this).balance); //todo more checks on this
 
         return true;
+    }
+
+    function bountyPayout(address _recip, uint256 _bounty)
+        private returns (bool)
+    {
+        return _recip.send(_bounty);
+    }
+
+    function feePayout(address _recip, uint256 _fee)
+        private returns (bool)
+    {
+        return _recip.send(_fee);
     }
 
     function getCallData(bytes _serializedTransaction, uint _startLoc) 
