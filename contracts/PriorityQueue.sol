@@ -29,8 +29,8 @@ contract PriorityQueue is Auth {
 
     Queue heap;
 
-    event Enter(uint256 val, address addr);
-    event Exit(uint256 val, address addr);
+    event Enter(bytes8 id, uint256 val);
+    event Exit(bytes8 id, uint256 val);
     event Pop(uint256 val, address addr);
 
     // function PriorityQueue() public {}
@@ -76,8 +76,8 @@ contract PriorityQueue is Auth {
     }
 
 	/**
-	 * getTimenode() 
-	 * Returns <(bytes8, bytes8, bytes8, address, uint256)> tuple containing the UUID, 
+	 * getTimenode()
+	 * Returns <(bytes8, bytes8, bytes8, address, uint256)> tuple containing the UUID,
 	 * left node, right node, address of, and bond value of the Timenode.
 	 */
     function getTimenode (bytes8 _timeNode)
@@ -110,6 +110,24 @@ contract PriorityQueue is Auth {
         return (heap.timeNodes[_idx].bond, heap.timeNodes[_idx].at);
     }
 
+    function snapShotQueue()
+        public view returns (uint256 length,bytes8[] ids,bytes8[] lefts,bytes8[] rights,uint256[] bonds)
+    {
+        bytes8[] memory _ids = new bytes8[](heap.size);
+        bytes8[] memory _lefts = new bytes8[](heap.size);
+        bytes8[] memory _rights = new bytes8[](heap.size);
+        uint256[] memory _bonds = new uint256[](heap.size);
+        bytes8 active = 0;
+        for( uint i=0; i<heap.size; i++) {
+          _ids[i] = heap.timeNodes[active].id;
+          _lefts[i] = heap.timeNodes[active].left;
+          _rights[i] = heap.timeNodes[active].right;
+          _bonds[i] = heap.timeNodes[active].bond;
+          active = heap.timeNodes[active].right;
+        }
+        return (heap.size, _ids, _lefts, _rights, _bonds);
+    }
+
 	/**
 	 * validateInsertPosition(<bytes8, uint256>)
 	 * Returns <bool> True if the this is the correct insert placement of the _priority value.
@@ -136,8 +154,8 @@ contract PriorityQueue is Auth {
     }
 
 	/**
-	 * insert(<bytes8, uint256, address>) 
-	 * Returns <bool> True if the insert is successful. 
+	 * insert(<bytes8, uint256, address>)
+	 * Returns <bool> True if the insert is successful.
 	 */
     function insert(bytes8 _previousNode, uint256 _priority, address _tn)
         auth
@@ -164,7 +182,7 @@ contract PriorityQueue is Auth {
           heap.last = _idx;
           heap.minBond = _priority;
         }
-        emit Enter(_priority, _tn);
+        emit Enter(_idx, _priority);
         return true;
     }
 
@@ -176,7 +194,6 @@ contract PriorityQueue is Auth {
         }
 
         uint256 _priority = heap.timeNodes[_timeNode].bond;
-        address _tn = heap.timeNodes[_timeNode].at;
 
         if (heap.timeNodes[_timeNode].left == 0x0) {
           heap.first = heap.timeNodes[_timeNode].right;
@@ -196,7 +213,7 @@ contract PriorityQueue is Auth {
 
         delete(heap.timeNodes[_timeNode]);
         heap.size = heap.size-1;
-        emit Exit(_priority, _tn);
+        emit Exit(_timeNode, _priority);
         return true;
     }
 
@@ -221,7 +238,7 @@ contract PriorityQueue is Auth {
 			//lowest bond inserted into last index
           	return heap.last;
         }
-		
+
 		// find middle
 		uint256 mid = (heap.maxBond - heap.minBond) /2;
         if ((mid + heap.minBond) > _bond ) {
@@ -251,13 +268,13 @@ contract PriorityQueue is Auth {
     {
       	bytes8 activeNode = heap.first;
       	for (uint256 i = 0; i < heap.size; i++) {
-			if(activeNode == 0x0) { //If it reaches the end of the queue, should never happen
-				return heap.last;
-			}
-			if (heap.timeNodes[activeNode].bond < _bond) {
-				return heap.timeNodes[activeNode].left;
-			}
-			activeNode = heap.timeNodes[activeNode].right;
-		}
+    			if(activeNode == 0x0) { //If it reaches the end of the queue, should never happen
+    				return heap.last;
+    			}
+    			if (heap.timeNodes[activeNode].bond < _bond) {
+    				return heap.timeNodes[activeNode].left;
+    			}
+    			activeNode = heap.timeNodes[activeNode].right;
+    		}
     }
 }

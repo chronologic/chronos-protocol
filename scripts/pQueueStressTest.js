@@ -4,7 +4,7 @@
  * come out to.
  */
 
-const VERBOSE = true 
+const VERBOSE = true
 
 const log = (msg) => {
     if (VERBOSE) console.log(msg)
@@ -31,16 +31,21 @@ const main = async () => {
     const pQueueBytecode = require('../build/contracts/PriorityQueue.json').bytecode
     const PriorityQueue = new web3.eth.Contract(pQueueABI)
 
+    const PriorityQueueJs = require('./priorityQueue');
+
     let pQueueDeployTxReceipt
     const pQueue = await PriorityQueue.deploy({
         data: pQueueBytecode,
     }).send({
         from: web3.eth.defaultAccount,
-        gas: 3000000,
+        gas: 3600000,
     }).on('receipt', (r) => {
         pQueueDeployTxReceipt = r
     })
-    
+
+console.log(PriorityQueueJs, pQueue.options.address)
+    const pQueuejs = new PriorityQueueJs(web3, pQueue.options.address);
+
     log(`Priority Queue address: ${pQueue.options.address}`)
     log(`Gas used while deploying Priority Queue: ${pQueueDeployTxReceipt.gasUsed}`)
     printLine()
@@ -67,7 +72,7 @@ const main = async () => {
             )
             curAddr = nextAddr(curAddr)
             l.push({
-                addr: curAddr, 
+                addr: curAddr,
                 val: curVal,
             })
         }
@@ -124,17 +129,21 @@ const main = async () => {
 
     printNewLine()
     printLine()
-    log('TEST: 1000 NODES')
-
-    for (let i = 102; i < 1000; i++) {
-        const previousNode = await pQueue.methods.getInsertPosition(list[i].val).call({from: web3.eth.defaultAccount})
-        const tx = await pQueue.methods.insert(previousNode, list[i].val, list[i].addr).send({from: web3.eth.defaultAccount, gas: 3000000})
-        if (parseInt(tx.gasUsed) > most) {
-            most = parseInt(tx.gasUsed)
-        }
-        sum += parseInt(tx.gasUsed)
-    }
+    // log('TEST: 1000 NODES')
+    //
+    // for (let i = 102; i < 1000; i++) {
+    //     const previousNode = await pQueue.methods.getInsertPosition(list[i].val).call({from: web3.eth.defaultAccount})
+    //     const tx = await pQueue.methods.insert(previousNode, list[i].val, list[i].addr).send({from: web3.eth.defaultAccount, gas: 3000000})
+    //     if (parseInt(tx.gasUsed) > most) {
+    //         most = parseInt(tx.gasUsed)
+    //     }
+    //     sum += parseInt(tx.gasUsed)
+    // }
+    console.log(pQueuejs, pQueuejs.length)
     previousNodex = await pQueue.methods.getInsertPosition(list[1000].val).call({from: web3.eth.defaultAccount})
+    // jsPreviousNodex = await pQueue.methods.getInsertPosition(list[1000].val).call({from: web3.eth.defaultAccount})
+
+
     tx = await pQueue.methods.insert(previousNodex, list[1000].val, list[1000].addr).send({from: web3.eth.defaultAccount, gas: 3000000})
     log(`GAS USED FOR THOUSANDTH INSERT ${tx.gasUsed}`)
     log(`HIGHEST GAS USED DURING 1,000 INSERTS: ${most}`)
@@ -165,7 +174,7 @@ const main = async () => {
     let popSum = 0
 
     printNewLine()
-    printLine() 
+    printLine()
     for (let i = 0; i < 10; i++) {
         const tx = await pQueue.methods.pop().send({from: web3.eth.defaultAccount, gas:3000000})
         if (parseInt(tx.gasUsed) > popMost) {
@@ -188,7 +197,7 @@ const main = async () => {
     }
     log(`HIGHEST GAS USED DURING 100 POPS: ${popMost}`)
     log(`AVERAGE GAS USED DURING 100 POPS ${popSum/100}`)
-    
+
     printLine()
     printNewLine()
     printLine()
