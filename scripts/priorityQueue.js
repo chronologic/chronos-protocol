@@ -11,7 +11,7 @@ const Bond = function (_id = 0,_left = 0,_right = 0,_value = 0) {
 
 const PQueue = function (web3, queueAddress) {
   this.list = [];
-  this.watcher = null;
+  this.watcher = {};
   this.address = queueAddress;
   this.web3 = web3;
   this.instance = new web3.eth.Contract(pQueueABI, this.address);
@@ -21,57 +21,89 @@ const PQueue = function (web3, queueAddress) {
 }
 
 PQueue.prototype.synchronize = async (self) => {
+  self = self ? self : this;
   await self.snapShotQueue(self);
-  // await queue.watchNetwork();
+  await self.watchNetwork(self);
 }
 
-PQueue.prototype.watchNetwork = async () => {
-  const fromBlock = await this.web3.eth.getBlockNumber( (e,r) => r);
-  console.log(blockNumber);
-  this.watcher = await this.instance.Enter({},{fromBlock})
+PQueue.prototype.watchNetwork = async (self) => {
+  self = self ? self : this;
+  const fromBlock = await self.web3.eth.getBlockNumber( (e,r) => r);
+  self.watcher.Enter = await self.instance.events.Enter({filter:{},fromBlock});//Depenent on Websocket provider
+  self.watcher.Exit = await self.instance.events.Exit({filter:{},fromBlock});//Depenent on Websocket provider
+  self.watcher.Enter
+  .on('data', async (d) => {
+    const timeNode = await self.instance.methods.getTimenode(d.returnValues.id).call();
+    const bond = new Bond(timeNode.id, timeNode.left, timeNode.right, timeNode.bond);
+    self.addBond(bond,self);
+  })
+  .on('error', (e) => {
+    console.error(e)
+  })
+  self.watcher.Exit
+  .on('data', async (d) => {
+    self.removeBond(d.returnValues.id,self);
+  })
+  .on('error', (e) => {
+    console.error(e)
+  })
 }
 
-PQueue.prototype.getPreviousNode = (newbond) => {
-  if(list.length === 0) {
-    return 0;
+PQueue.prototype.getPreviousNode = (newbond, self) => {
+  self = self ? self : this;
+  if(self.length === 0) {
+    return null;
   }
-  this.list.find( (bond, idx) => {
-    console.log(bond,idx)
-    // if(bond)
-  })
+  return self.list.find( (bond, idx) => self.list[idx].bond >= newbond && (!self.list[idx+1] || newbond > self.list[idx+1].bond) );
 }
 
-PQueue.prototype.getNodeIndex = (id) => {
-  this.list.find( (bond, idx) => {
-    console.log(bond,idx)
-    // if(bond)
+PQueue.prototype.getNodeIndex = (id, self) => {
+  self = self ? self : this;
+  let found = 0;
+  self.list.find( (bond, idx) => {
+    if (bond.id === id) {
+      found = idx;
+    }
   })
+  return found;
 }
 
 PQueue.prototype.snapShotQueue = async (self) => {
+  self = self ? self : this;
   const list = await self.instance.methods.snapShotQueue().call( (e,r) => r);
   for(let i=0;i<list[0];i++) {
     self.addBond(new Bond(ids[i], lefts[i], rights[i], bonds[i]));
   }
 }
 
-PQueue.prototype.addBond = (bond) => {
+PQueue.prototype.addBond = (bond, self) => {
+  self = self ? self : this;
   let idx, pos;
-  if (Number(bond.left) > 0) {
-    idx = getNodeIndex(bond.left);
-    pos = 'left';
-  } else if (Number(bond.right) > 0) {
-    idx = getNodeIndex(bond.right)
+  if (Number(bond.right) > 0) {
+    idx = self.getNodeIndex(bond.right, self)
     pos = 'right';
+  } else  if (Number(bond.left) > 0) {
+    idx = self.getNodeIndex(bond.left, self);
+    pos = 'left';
   } else {
     idx = 0;
   }
-  this.list.splice(idx,0,bond);
+  switch (pos) {
+    case 'left':
+      self.list.splice(idx+1,0,bond);
+      break;
+    case 'right':
+      self.list.splice(idx,0,bond);
+      break;
+    default :
+      self.list.unshift(bond);
+  }
 }
 
-PQueue.prototype.removeBond = (id) => {
-  const idx = getNodeIndex(id);
-  this.list.splice(idx,1);
+PQueue.prototype.removeBond = (id, self) => {
+  self = self ? self : this;
+  const idx = self.getNodeIndex(id);
+  self.list.splice(idx,1);
 }
 
 module.exports = PQueue;
