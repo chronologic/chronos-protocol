@@ -20,7 +20,8 @@ const printNewLine = () => {
 
 const main = async () => {
     const Web3 = require('web3')
-    const web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"))
+    // const web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"))
+    const web3 = new Web3(new Web3.providers.WebsocketProvider("http://localhost:8545"))
     web3.eth.defaultAccount = (await web3.eth.getAccounts())[0]
 
     log(`Executing from: ${web3.eth.defaultAccount}`)
@@ -38,7 +39,7 @@ const main = async () => {
         data: pQueueBytecode,
     }).send({
         from: web3.eth.defaultAccount,
-        gas: 3600000,
+        gas: 3700000,
     }).on('receipt', (r) => {
         pQueueDeployTxReceipt = r
     })
@@ -100,7 +101,15 @@ console.log(PriorityQueueJs, pQueue.options.address)
         }
         sum += parseInt(tx.gasUsed)
     }
+    let time = new Date().getTime();
     previousNodex = await pQueue.methods.getInsertPosition(list[10].val).call({from: web3.eth.defaultAccount})
+    let onChainTime = new Date().getTime();
+    let jsPreviousNodex = await pQueuejs.getPreviousNode(list[1000].val, pQueuejs);
+    let offChainTime = new Date().getTime();
+
+    console.log('On-Chain TENTH index search:', previousNodex, `${(onChainTime - time)/1000} ms` )
+    console.log('Off-Chain TENTH index search:', jsPreviousNodex.id,`${( offChainTime - onChainTime)/1000} ms` )
+
     tx = await pQueue.methods.insert(previousNodex, list[10].val, list[10].addr).send({from: web3.eth.defaultAccount, gas: 3000000})
     log(`GAS USED FOR FIRST INSERT ${first.gasUsed}`)
     log(`GAS USED FOR TENTH INSERT ${tx.gasUsed}`)
@@ -120,7 +129,15 @@ console.log(PriorityQueueJs, pQueue.options.address)
         }
         sum += parseInt(tx.gasUsed)
     }
+    time = new Date().getTime();
     previousNodex = await pQueue.methods.getInsertPosition(list[100].val).call({from: web3.eth.defaultAccount})
+    onChainTime = new Date().getTime();
+    jsPreviousNodex = await pQueuejs.getPreviousNode(list[1000].val, pQueuejs);
+    offChainTime = new Date().getTime();
+
+    console.log('On-Chain HUNDREDTH index search:', previousNodex, `${(onChainTime - time)/1000} ms` )
+    console.log('Off-Chain HUNDREDTH index search:', jsPreviousNodex.id,`${( offChainTime - onChainTime)/1000} ms` )
+
     tx = await pQueue.methods.insert(previousNodex, list[100].val, list[100].addr).send({from: web3.eth.defaultAccount, gas: 3000000})
     log(`GAS USED FOR HUNDREDTH INSERT ${tx.gasUsed}`)
     log(`HIGHEST GAS USED DURING 100 INSERTS: ${most}`)
@@ -129,26 +146,34 @@ console.log(PriorityQueueJs, pQueue.options.address)
 
     printNewLine()
     printLine()
-    // log('TEST: 1000 NODES')
-    //
-    // for (let i = 102; i < 1000; i++) {
-    //     const previousNode = await pQueue.methods.getInsertPosition(list[i].val).call({from: web3.eth.defaultAccount})
-    //     const tx = await pQueue.methods.insert(previousNode, list[i].val, list[i].addr).send({from: web3.eth.defaultAccount, gas: 3000000})
-    //     if (parseInt(tx.gasUsed) > most) {
-    //         most = parseInt(tx.gasUsed)
-    //     }
-    //     sum += parseInt(tx.gasUsed)
-    // }
-    console.log(pQueuejs, pQueuejs.length)
-    previousNodex = await pQueue.methods.getInsertPosition(list[1000].val).call({from: web3.eth.defaultAccount})
-    // jsPreviousNodex = await pQueue.methods.getInsertPosition(list[1000].val).call({from: web3.eth.defaultAccount})
+    log('TEST: 1000 NODES')
 
+    for (let i = 102; i < 1000; i++) {
+        const previousNode = await pQueue.methods.getInsertPosition(list[i].val).call({from: web3.eth.defaultAccount})
+        const tx = await pQueue.methods.insert(previousNode, list[i].val, list[i].addr).send({from: web3.eth.defaultAccount, gas: 3000000})
+        if (parseInt(tx.gasUsed) > most) {
+            most = parseInt(tx.gasUsed)
+        }
+        sum += parseInt(tx.gasUsed)
+    }
+    time = new Date().getTime();
+    previousNodex = await pQueue.methods.getInsertPosition(list[1000].val).call({from: web3.eth.defaultAccount})
+    onChainTime = new Date().getTime();
+    jsPreviousNodex = await pQueuejs.getPreviousNode(list[1000].val, pQueuejs);
+    offChainTime = new Date().getTime();
+
+    console.log('On-Chain THOUSANDTH index search:', previousNodex, `${(onChainTime - time)/1000} ms` )
+    console.log('Off-Chain THOUSANDTH index search:', jsPreviousNodex.id,`${( offChainTime - onChainTime)/1000} ms` )
 
     tx = await pQueue.methods.insert(previousNodex, list[1000].val, list[1000].addr).send({from: web3.eth.defaultAccount, gas: 3000000})
     log(`GAS USED FOR THOUSANDTH INSERT ${tx.gasUsed}`)
     log(`HIGHEST GAS USED DURING 1,000 INSERTS: ${most}`)
     log(`AVERAGE GAS USED DURING 1000 INSERTS ${sum/1000}`)
     printLine()
+
+    printLine()
+    console.log(pQueuejs.list)
+
     //
     // printNewLine()
     // printLine()
