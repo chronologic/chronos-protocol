@@ -104,7 +104,7 @@ console.log(PriorityQueueJs, pQueue.options.address)
     let time = new Date().getTime();
     previousNodex = await pQueue.methods.getInsertPosition(list[10].val).call({from: web3.eth.defaultAccount})
     let onChainTime = new Date().getTime();
-    let jsPreviousNodex = await pQueuejs.getPreviousNode(list[1000].val, pQueuejs);
+    let jsPreviousNodex = await pQueuejs.getPreviousNode(list[10].val, pQueuejs);
     let offChainTime = new Date().getTime();
 
     console.log('On-Chain TENTH index search:', previousNodex, `${(onChainTime - time)/1000} ms` )
@@ -132,7 +132,7 @@ console.log(PriorityQueueJs, pQueue.options.address)
     time = new Date().getTime();
     previousNodex = await pQueue.methods.getInsertPosition(list[100].val).call({from: web3.eth.defaultAccount})
     onChainTime = new Date().getTime();
-    jsPreviousNodex = await pQueuejs.getPreviousNode(list[1000].val, pQueuejs);
+    jsPreviousNodex = await pQueuejs.getPreviousNode(list[100].val, pQueuejs);
     offChainTime = new Date().getTime();
 
     console.log('On-Chain HUNDREDTH index search:', previousNodex, `${(onChainTime - time)/1000} ms` )
