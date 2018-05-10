@@ -118,7 +118,7 @@ contract PriorityQueue is Auth {
         bytes8[] memory _lefts = new bytes8[](heap.size);
         bytes8[] memory _rights = new bytes8[](heap.size);
         uint256[] memory _bonds = new uint256[](heap.size);
-        bytes8 active = 0;
+        bytes8 active = heap.first;
         for( uint i=0; i<heap.size; i++) {
           _ids[i] = heap.timeNodes[active].id;
           _lefts[i] = heap.timeNodes[active].left;
