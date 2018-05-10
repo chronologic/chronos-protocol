@@ -32,7 +32,6 @@ contract PriorityQueue is Auth {
     event Enter(bytes8 id, uint256 val);
     event Exit(bytes8 id, uint256 val);
     event Pop(uint256 val, address addr);
-    event Shift(bytes8 id);
 
     // function PriorityQueue() public {}
 
@@ -172,7 +171,6 @@ contract PriorityQueue is Auth {
 
         if(heap.timeNodes[_idx].left != 0x0) {
           heap.timeNodes[_previousNode].right = _idx;
-          emit Shift(_previousNode);
         } else {
           heap.first = _idx;
           heap.maxBond = _priority;
@@ -180,7 +178,6 @@ contract PriorityQueue is Auth {
 
         if(heap.timeNodes[_idx].right != 0x0) {
           heap.timeNodes[ heap.timeNodes[_idx].right ].left = _idx;
-          emit Shift(heap.timeNodes[_idx].right);
         } else {
           heap.last = _idx;
           heap.minBond = _priority;
@@ -202,20 +199,16 @@ contract PriorityQueue is Auth {
           heap.first = heap.timeNodes[_timeNode].right;
           heap.maxBond = heap.timeNodes[ heap.timeNodes[_timeNode].right ].bond;
           heap.timeNodes[ heap.timeNodes[_timeNode].right ].left = 0x0;
-          emit Shift(heap.timeNodes[_timeNode].right);
         } else {
           heap.timeNodes[ heap.timeNodes[_timeNode].left ].right = heap.timeNodes[_timeNode].right;
-          emit Shift(heap.timeNodes[_timeNode].left);
         }
 
         if (heap.timeNodes[_timeNode].right == 0x0) {
           heap.last = heap.timeNodes[_timeNode].left;
           heap.minBond = heap.timeNodes[ heap.timeNodes[_timeNode].left ].bond;
           heap.timeNodes[ heap.timeNodes[_timeNode].left ].right = 0x0;
-          emit Shift(heap.timeNodes[_timeNode].left);
         } else {
           heap.timeNodes[ heap.timeNodes[_timeNode].right ].left = heap.timeNodes[_timeNode].left;
-          emit Shift(heap.timeNodes[_timeNode].right);
         }
 
         delete(heap.timeNodes[_timeNode]);

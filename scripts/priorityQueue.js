@@ -31,8 +31,7 @@ PQueue.prototype.watchNetwork = async (self) => {
   const fromBlock = await self.web3.eth.getBlockNumber( (e,r) => r);
   self.watcher.Enter = await self.instance.events.Enter({filter:{},fromBlock});//Dependent on Websocket provider
   self.watcher.Exit = await self.instance.events.Exit({filter:{},fromBlock});//Dependent on Websocket provider
-  self.watcher.Shift = await self.instance.events.Shift({filter:{},fromBlock});//Dependent on Websocket provider
-  console.log()
+  // self.watcher.Shift = await self.instance.events.Shift({filter:{},fromBlock});//Dependent on Websocket provider
   self.watcher.Enter
   .on('data', async (d) => {
     const timeNode = await self.instance.methods.getTimenode(d.returnValues.id).call();
@@ -49,23 +48,20 @@ PQueue.prototype.watchNetwork = async (self) => {
   .on('error', (e) => {
     console.error(e)
   })
-  self.watcher.Shift
-  .on('data', async (d) => {
-    const timeNode = await self.instance.methods.getTimenode(d.returnValues.id).call();
-    const bond = new Bond(timeNode.id, timeNode.left, timeNode.right, timeNode.bond);
-    self.updateBond(bond,self);
-  })
-  .on('error', (e) => {
-    console.error(e)
-  })
+  // self.watcher.Shift
+  // .on('data', async (d) => {
+  //   const timeNode = await self.instance.methods.getTimenode(d.returnValues.id).call();
+  //   const bond = new Bond(timeNode.id, timeNode.left, timeNode.right, timeNode.bond);
+  //   self.updateBond(bond,self);
+  // })
+  // .on('error', (e) => {
+  //   console.error(e)
+  // })
 }
 
 PQueue.prototype.getPreviousNode = (newbond, self) => {
   self = self ? self : this;
-  if(self.list.length === 0) {
-    return null;
-  }
-  return self.list.find( (bond, idx) => (!self.list[idx+1] || self.list[idx].bond >= newbond) && (!self.list[idx+1] || newbond > self.list[idx+1].bond) );
+  return self.list.find( (bond, idx) => bond.bond >= newbond && (!self.list[idx+1] || newbond > self.list[idx+1].bond) ) || {id:0};
 }
 
 PQueue.prototype.getNodeIndex = (id, self) => {
