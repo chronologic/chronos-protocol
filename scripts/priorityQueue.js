@@ -1,13 +1,17 @@
 const pQueueABI = require('../build/contracts/PriorityQueue.json').abi;
 
 const Bond = function (_id = 0,_left = 0,_right = 0,_value = 0) {
-  return {
+
+  Object.assign( this, {
     id: _id,
     left: _left,
     right: _right,
     bond: _value
-  }
+  });
+  Object.defineProperty(this, 'jsBond', { get: () => { return {id: this.id, bond: this.bond}; } });
 }
+
+Bond.prototype.jsBond
 
 const PQueue = function (web3, queueAddress) {
   this.list = [];
@@ -101,13 +105,13 @@ PQueue.prototype.addBond = (bond, self) => {
   }
   switch (pos) {
     case 'left':
-      self.list.splice(idx+1,0,bond);
+      self.list.splice(idx+1,0,bond.jsBond);
       break;
     case 'right':
-      self.list.splice(idx,0,bond);
+      self.list.splice(idx,0,bond.jsBond);
       break;
     default :
-      self.list.unshift(bond);
+      self.list.unshift(bond.jsBond);
   }
 }
 
