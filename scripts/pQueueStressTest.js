@@ -44,7 +44,6 @@ const main = async () => {
         pQueueDeployTxReceipt = r
     })
 
-console.log(PriorityQueueJs, pQueue.options.address)
     const pQueuejs = new PriorityQueueJs(web3, pQueue.options.address);
 
     log(`Priority Queue address: ${pQueue.options.address}`)
@@ -84,6 +83,7 @@ console.log(PriorityQueueJs, pQueue.options.address)
 
     let most = 0
     let sum = 0
+    const stressStart = new Date().getTime();
 
     printNewLine()
     printLine()
@@ -174,28 +174,40 @@ console.log(PriorityQueueJs, pQueue.options.address)
     log(`AVERAGE GAS USED DURING 1000 INSERTS ${sum/1000}`)
     printLine()
 
+    log('Total time for 1,000 inserts:', jsPreviousNodex.id,`${( new Date().getTime() - stressStart)/1000} ms` )
     printLine()
-    console.log(pQueuejs.list)
 
-    //
-    // printNewLine()
-    // printLine()
-    // log('TEST: 10000 NODES')
-    //
-    // for (let i = 1002; i < 10000; i++) {
-    //     const previousNode = await pQueue.methods.getInsertPosition(list[i].val).call({from: web3.eth.defaultAccount})
-    //     const tx = await pQueue.methods.insert(previousNode, list[i].val, list[i].addr).send({from: web3.eth.defaultAccount, gas: 3000000})
-    //     if (parseInt(tx.gasUsed) > most) {
-    //         most = parseInt(tx.gasUsed)
-    //     }
-    //     sum += parseInt(tx.gasUsed)
-    // }
-    // previousNodex = await pQueue.methods.getInsertPosition(list[10000].val).call({from: web3.eth.defaultAccount})
-    // tx = await pQueue.methods.insert(previousNodex, list[10000].val, list[10000].addr).send({from: web3.eth.defaultAccount, gas: 3000000})
-    // log(`GAS USED FOR TEN-THOUSANDTH INSERT ${tx.gasUsed}`)
-    // log(`HIGHEST GAS USED DURING 10,000 INSERTS: ${most}`)
-    // log(`AVERAGE GAS USED DURING 10,000 INSERTS ${sum/10000}`)
+    printNewLine()
     printLine()
+    log('TEST: 10000 NODES')
+
+    for (let i = 1002; i < 10000; i++) {
+        const previousNode = (await pQueuejs.getPreviousNode(list[i].val, pQueuejs)).id;
+        // const previousNode = await pQueue.methods.getInsertPosition(list[i].val).call({from: web3.eth.defaultAccount})
+        const tx = await pQueue.methods.insert(previousNode, list[i].val, list[i].addr).send({from: web3.eth.defaultAccount, gas: 3000000})
+        if (parseInt(tx.gasUsed) > most) {
+            most = parseInt(tx.gasUsed)
+        }
+        sum += parseInt(tx.gasUsed)
+    }
+    time = new Date().getTime();
+    previousNodex = await pQueue.methods.getInsertPosition(list[10000].val).call({from: web3.eth.defaultAccount})
+    onChainTime = new Date().getTime();
+    jsPreviousNodex = await pQueuejs.getPreviousNode(list[10000].val, pQueuejs);
+    offChainTime = new Date().getTime();
+
+    log('On-Chain TEN-THOUSANDTH index search:', previousNodex, `${(onChainTime - time)/1000} ms` )
+    log('Off-Chain TEN-THOUSANDTH index search:', jsPreviousNodex.id,`${( offChainTime - onChainTime)/1000} ms` )
+
+    tx = await pQueue.methods.insert(previousNodex, list[10000].val, list[10000].addr).send({from: web3.eth.defaultAccount, gas: 3000000})
+    log(`GAS USED FOR TEN-THOUSANDTH INSERT ${tx.gasUsed}`)
+    log(`HIGHEST GAS USED DURING 10,000 INSERTS: ${most}`)
+    log(`AVERAGE GAS USED DURING 10,000 INSERTS ${sum/10000}`)
+    printLine()
+
+    log('Total time for 10,000 inserts:', jsPreviousNodex.id,`${( new Date().getTime() - stressStart)/1000} ms` )
+    printLine()
+    log(pQueuejs.list, pQueuejs.list.length)
 
 
     let popMost = 0
@@ -239,18 +251,18 @@ console.log(PriorityQueueJs, pQueue.options.address)
     log(`HIGHEST GAS USED DURING 1000 POPS: ${popMost}`)
     log(`AVERAGE GAS USED DURING 1000 POPS ${popSum/1000}`)
 
-    // printLine()
-    // printNewLine()
-    // printLine()
-    // for (let i = 1000; i < 10000; i++) {
-    //     const tx = await pQueue.methods.pop().send({from: web3.eth.defaultAccount, gas:3000000})
-    //     if (parseInt(tx.gasUsed) > popMost) {
-    //         popMost = parseInt(tx.gasUsed)
-    //     }
-    //     popSum += parseInt(tx.gasUsed)
-    // }
-    // log(`HIGHEST GAS USED DURING 10,000 POPS: ${popMost}`)
-    // log(`AVERAGE GAS USED DURING 10,000 POPS ${popSum/10000}`)
+    printLine()
+    printNewLine()
+    printLine()
+    for (let i = 1000; i < 10000; i++) {
+        const tx = await pQueue.methods.pop().send({from: web3.eth.defaultAccount, gas:3000000})
+        if (parseInt(tx.gasUsed) > popMost) {
+            popMost = parseInt(tx.gasUsed)
+        }
+        popSum += parseInt(tx.gasUsed)
+    }
+    log(`HIGHEST GAS USED DURING 10,000 POPS: ${popMost}`)
+    log(`AVERAGE GAS USED DURING 10,000 POPS ${popSum/10000}`)
 }
 
 main()
