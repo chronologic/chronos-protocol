@@ -39,7 +39,7 @@ const main = async () => {
         data: pQueueBytecode,
     }).send({
         from: web3.eth.defaultAccount,
-        gas: 3700000,
+        gas: 3390000,
     }).on('receipt', (r) => {
         pQueueDeployTxReceipt = r
     })
