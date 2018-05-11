@@ -94,7 +94,8 @@ console.log(PriorityQueueJs, pQueue.options.address)
     let first = tx;
 
     for (let i = 2; i < 10; i++) {
-        const previousNode = await pQueue.methods.getInsertPosition(list[i].val).call({from: web3.eth.defaultAccount})
+        const previousNode = (await pQueuejs.getPreviousNode(list[i].val, pQueuejs)).id;
+        // const previousNode = await pQueue.methods.getInsertPosition(list[i].val).call({from: web3.eth.defaultAccount})
         const tx = await pQueue.methods.insert(previousNode, list[i].val, list[i].addr).send({from: web3.eth.defaultAccount, gas: 3000000})
         if (parseInt(tx.gasUsed) > most) {
             most = parseInt(tx.gasUsed)
@@ -122,7 +123,8 @@ console.log(PriorityQueueJs, pQueue.options.address)
     log('TEST: 100 NODES')
 
     for (let i = 12; i < 100; i++) {
-        const previousNode = await pQueue.methods.getInsertPosition(list[i].val).call({from: web3.eth.defaultAccount})
+        const previousNode = (await pQueuejs.getPreviousNode(list[i].val, pQueuejs)).id;
+        // const previousNode = await pQueue.methods.getInsertPosition(list[i].val).call({from: web3.eth.defaultAccount})
         const tx = await pQueue.methods.insert(previousNode, list[i].val, list[i].addr).send({from: web3.eth.defaultAccount, gas: 3000000})
         if (parseInt(tx.gasUsed) > most) {
             most = parseInt(tx.gasUsed)
@@ -149,7 +151,8 @@ console.log(PriorityQueueJs, pQueue.options.address)
     log('TEST: 1000 NODES')
 
     for (let i = 102; i < 1000; i++) {
-        const previousNode = await pQueue.methods.getInsertPosition(list[i].val).call({from: web3.eth.defaultAccount})
+        const previousNode = (await pQueuejs.getPreviousNode(list[i].val, pQueuejs)).id;
+        // const previousNode = await pQueue.methods.getInsertPosition(list[i].val).call({from: web3.eth.defaultAccount})
         const tx = await pQueue.methods.insert(previousNode, list[i].val, list[i].addr).send({from: web3.eth.defaultAccount, gas: 3000000})
         if (parseInt(tx.gasUsed) > most) {
             most = parseInt(tx.gasUsed)
