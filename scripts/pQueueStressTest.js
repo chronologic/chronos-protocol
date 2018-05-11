@@ -108,8 +108,8 @@ const main = async () => {
     let jsPreviousNodex = await pQueuejs.getPreviousNode(list[10].val, pQueuejs);
     let offChainTime = new Date().getTime();
 
-    log('On-Chain TENTH index search:', previousNodex, `${(onChainTime - time)/1000} ms` )
-    log('Off-Chain TENTH index search:', jsPreviousNodex.id,`${( offChainTime - onChainTime)/1000} ms` )
+    log(`On-Chain TENTH index search: ${previousNodex} ${(onChainTime - time)/1000} ms` )
+    log(`Off-Chain TENTH index search: ${jsPreviousNodex.id} ${( offChainTime - onChainTime)/1000} ms` )
 
     tx = await pQueue.methods.insert(previousNodex, list[10].val, list[10].addr).send({from: web3.eth.defaultAccount, gas: 3000000})
     log(`GAS USED FOR FIRST INSERT ${first.gasUsed}`)
@@ -118,7 +118,7 @@ const main = async () => {
     log(`AVERAGE GAS USED DURING 10 INSERTS ${sum/10}`)
     printLine()
 
-    log('Total time for 10 inserts:', jsPreviousNodex.id,`${( new Date().getTime() - stressStart)/1000} ms` )
+    log(`Total time for 10 inserts: ${( new Date().getTime() - stressStart)/1000} ms` )
     printLine()
 
     printNewLine()
@@ -140,8 +140,8 @@ const main = async () => {
     jsPreviousNodex = await pQueuejs.getPreviousNode(list[100].val, pQueuejs);
     offChainTime = new Date().getTime();
 
-    log('On-Chain HUNDREDTH index search:', previousNodex, `${(onChainTime - time)/1000} ms` )
-    log('Off-Chain HUNDREDTH index search:', jsPreviousNodex.id,`${( offChainTime - onChainTime)/1000} ms` )
+    log(`On-Chain HUNDREDTH index search: ${previousNodex} ${(onChainTime - time)/1000} ms` )
+    log(`Off-Chain HUNDREDTH index search: ${jsPreviousNodex.id} ${( offChainTime - onChainTime)/1000} ms` )
 
     tx = await pQueue.methods.insert(previousNodex, list[100].val, list[100].addr).send({from: web3.eth.defaultAccount, gas: 3000000})
     log(`GAS USED FOR HUNDREDTH INSERT ${tx.gasUsed}`)
@@ -149,7 +149,7 @@ const main = async () => {
     log(`AVERAGE GAS USED DURING 100 INSERTS ${sum/100}`)
     printLine()
 
-    log('Total time for 100 inserts:', jsPreviousNodex.id,`${( new Date().getTime() - stressStart)/1000} ms` )
+    log(`Total time for 100 inserts: ${( new Date().getTime() - stressStart)/1000} ms` )
     printLine()
 
     printNewLine()
@@ -171,8 +171,8 @@ const main = async () => {
     jsPreviousNodex = await pQueuejs.getPreviousNode(list[1000].val, pQueuejs);
     offChainTime = new Date().getTime();
 
-    log('On-Chain THOUSANDTH index search:', previousNodex, `${(onChainTime - time)/1000} ms` )
-    log('Off-Chain THOUSANDTH index search:', jsPreviousNodex.id,`${( offChainTime - onChainTime)/1000} ms` )
+    log(`On-Chain THOUSANDTH index search: ${previousNodex} ${(onChainTime - time)/1000} ms` )
+    log(`Off-Chain THOUSANDTH index search: ${jsPreviousNodex.id} ${( offChainTime - onChainTime)/1000} ms` )
 
     tx = await pQueue.methods.insert(previousNodex, list[1000].val, list[1000].addr).send({from: web3.eth.defaultAccount, gas: 3000000})
     log(`GAS USED FOR THOUSANDTH INSERT ${tx.gasUsed}`)
@@ -180,7 +180,7 @@ const main = async () => {
     log(`AVERAGE GAS USED DURING 1000 INSERTS ${sum/1000}`)
     printLine()
 
-    log('Total time for 1,000 inserts:', jsPreviousNodex.id,`${( new Date().getTime() - stressStart)/1000} ms` )
+    log(`Total time for 1,000 inserts: ${( new Date().getTime() - stressStart)/1000} ms` )
     printLine()
 
     printNewLine()
@@ -202,8 +202,8 @@ const main = async () => {
     jsPreviousNodex = await pQueuejs.getPreviousNode(list[10000].val, pQueuejs);
     offChainTime = new Date().getTime();
 
-    log('On-Chain TEN-THOUSANDTH index search:', previousNodex, `${(onChainTime - time)/1000} ms` )
-    log('Off-Chain TEN-THOUSANDTH index search:', jsPreviousNodex.id,`${( offChainTime - onChainTime)/1000} ms` )
+    log(`On-Chain TEN-THOUSANDTH index search: ${previousNodex} ${(onChainTime - time)/1000} ms` )
+    log(`Off-Chain TEN-THOUSANDTH index search: ${jsPreviousNodex.id} ${( offChainTime - onChainTime)/1000} ms` )
 
     tx = await pQueue.methods.insert(previousNodex, list[10000].val, list[10000].addr).send({from: web3.eth.defaultAccount, gas: 3000000})
     log(`GAS USED FOR TEN-THOUSANDTH INSERT ${tx.gasUsed}`)
@@ -211,7 +211,7 @@ const main = async () => {
     log(`AVERAGE GAS USED DURING 10,000 INSERTS ${sum/10000}`)
     printLine()
 
-    log('Total time for 10,000 inserts:', jsPreviousNodex.id,`${( new Date().getTime() - stressStart)/1000} ms` )
+    log(`Total time for 10,000 inserts: ${( new Date().getTime() - stressStart)/1000} ms` )
     printLine()
     log(pQueuejs.list, pQueuejs.list.length)
 
