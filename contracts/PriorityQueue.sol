@@ -136,19 +136,19 @@ contract PriorityQueue is Auth {
         public view returns (bool)
      {
         if (_previousNode != 0x0) {
-			// If trying to insert at position not at index 0, require _priority <= previous bond value.
-			require(heap.timeNodes[_previousNode].bond >= _priority);
-			if (_previousNode != heap.last) {
-				bytes8 rightNode = heap.timeNodes[_previousNode].right;
-				// Always place a new insert behind the ones before it by requiring the _priority
-				// is greater than the right node's bond value.
-				require(heap.timeNodes[rightNode].bond < _priority);
-			}
+    			// If trying to insert at position not at index 0, require _priority <= previous bond value.
+    			require(heap.timeNodes[_previousNode].bond >= _priority);
+    			if (_previousNode != heap.last) {
+    				bytes8 rightNode = heap.timeNodes[_previousNode].right;
+    				// Always place a new insert behind the ones before it by requiring the _priority
+    				// is greater than the right node's bond value.
+    				require(heap.timeNodes[rightNode].bond < _priority);
+    			}
         } else { // if _previousNode === 0x0, i.e. try insert at index 0.
-			if(heap.first != 0x0) {
-				 //Ensure older nodes, with same bond value remain at the top of the line.
-				require(heap.timeNodes[heap.first].bond < _priority);
-			}
+    			if(heap.first != 0x0) {
+    				 //Ensure older nodes, with same bond value remain at the top of the line.
+    				require(heap.timeNodes[heap.first].bond < _priority);
+    			}
         }
         return true;
     }
