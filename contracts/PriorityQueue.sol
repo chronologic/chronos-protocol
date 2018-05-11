@@ -166,8 +166,15 @@ contract PriorityQueue is Auth {
 
         assert(heap.timeNodes[_idx].at == 0x0); // Ensure no overwriting
 
-        heap.timeNodes[_idx] = Timenode(_tn, _idx, _previousNode, heap.timeNodes[_previousNode].right, _priority );
-        heap.size = heap.size+1;
+        bytes8 _right;
+        if (_previousNode == 0x0) {
+          _right = heap.first;
+        } else {
+          _right = heap.timeNodes[_previousNode].right;
+        }
+
+        heap.timeNodes[_idx] = Timenode(_tn, _idx, _previousNode, _right, _priority );
+        heap.size++;
 
         if(heap.timeNodes[_idx].left != 0x0) {
           heap.timeNodes[_previousNode].right = _idx;
@@ -212,7 +219,7 @@ contract PriorityQueue is Auth {
         }
 
         delete(heap.timeNodes[_timeNode]);
-        heap.size = heap.size-1;
+        heap.size--;
         emit Exit(_timeNode, _priority);
         return true;
     }
