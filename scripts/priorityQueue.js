@@ -63,9 +63,13 @@ PQueue.prototype.watchNetwork = async (self) => {
   // })
 }
 
-PQueue.prototype.getPreviousNode = (newbond, self) => {
+PQueue.prototype.getPreviousNode = async (newbond, self) => {
   self = self ? self : this;
-  return self.list.find( (bond, idx) => bond.bond >= newbond && (!self.list[idx+1] || newbond > self.list[idx+1].bond) ) || {id:0};
+  const onChainQueueLength = await self.instance.methods.queueSize().call();
+  if( self.list.length < onChainQueueLength ) {
+    return await self.getPreviousNode(newbond, self);
+  }
+  return self.list.find( (bond, idx) => bond.bond >= newbond && (!self.list[idx+1] || newbond > self.list[idx+1].bond) ) || {id:'0x0000000000000000'};
 }
 
 PQueue.prototype.getNodeIndex = (id, self) => {
