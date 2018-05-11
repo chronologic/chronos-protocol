@@ -125,10 +125,4 @@ PQueue.prototype.removeBond = (id, self) => {
   self.list.splice(idx,1);
 }
 
-PQueue.prototype.updateBond = (bond, self) => {
-  self = self ? self : this;
-  self.removeBond(bond.id, self);
-  self.addBond(bond, self);
-}
-
 module.exports = PQueue;
