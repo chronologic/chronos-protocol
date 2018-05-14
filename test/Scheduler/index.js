@@ -4,7 +4,7 @@ const Scheduler = artifacts.require('Scheduler.sol')
 const ScheduledTransaction = artifacts.require('ScheduledTransaction.sol')
 
 const ipfsNode = require('../../scripts/ipfsNode')
-const Serializer = require('../../scripts/serializeTransaction')
+const Serializer = require('../../scripts/TransactionSerializer')
 
 const b58 = require('base-58')
 

@@ -82,26 +82,29 @@ contract('ClaimElection', (accounts) => {
         // First fund a timenode.
         await stdToken.transfer(timenode1, 333, {from: tokenController})
         expect((await stdToken.balanceOf(timenode1)).toNumber()) .to.equal(333)
-
+        
         // This timenode will submit three bonds with values [122, 55, 156]
         //
         // First, approve the token transfer...
         await stdToken.approve(claimElection.address, 333, {from: timenode1})
         //
         // Submit the first bond.
-        await claimElection.joinQueue(122, {from: timenode1})
+        const inPos = await pQueue.getInsertPosition(122)
+        await claimElection.joinQueue(122, inPos, {from: timenode1})
         const peek1 = await pQueue.peek()
         expect(peek1[0].toNumber()).to.equal(122)
         expect(peek1[1]).to.equal(timenode1)
         //
         // Submit the second bond.
-        await claimElection.joinQueue(55, {from: timenode1})
-        const getIndex1 = await pQueue.getAtIndex(1)
-        expect(getIndex1[0].toNumber()).to.equal(55)
-        expect(getIndex1[1]).to.equal(timenode1)
+        const inPos2 = await pQueue.getInsertPosition(55)
+        await claimElection.joinQueue(55, inPos2, {from: timenode1})
+        // const getIndex1 = await pQueue.getAtIndex(1)
+        // expect(getIndex1[0].toNumber()).to.equal(55)
+        // expect(getIndex1[1]).to.equal(timenode1)
         //
         // Submit the third bond.
-        await claimElection.joinQueue(156, {from:timenode1})
+        const inPos3 = await pQueue.getInsertPosition(156)
+        await claimElection.joinQueue(156, inPos3, {from:timenode1})
         const peek2 = await pQueue.peek()
         expect(peek2[0].toNumber()).to.equal(156)
         expect(peek2[1]).to.equal(timenode1)

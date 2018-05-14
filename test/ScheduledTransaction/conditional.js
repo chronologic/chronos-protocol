@@ -13,7 +13,7 @@ const ScheduledTransaction = artifacts.require('ScheduledTransaction.sol')
 const ConditionDestination = artifacts.require('ConditionDestination.sol')
 
 /** Helper Scripts */
-const Serializer = require('../../scripts/serializeTransaction')
+const Serializer = require('../../scripts/TransactionSerializer')
 
 /** Third party imports */
 const ethers = require('ethers')

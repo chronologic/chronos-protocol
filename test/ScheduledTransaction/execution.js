@@ -13,7 +13,7 @@ const ScheduledTransaction = artifacts.require('ScheduledTransaction.sol')
 
 /** Helper Scripts */
 const ipfsNode = require('../../scripts/ipfsNode')
-const Serializer = require('../../scripts/serializeTransaction')
+const Serializer = require('../../scripts/TransactionSerializer')
 
 /** Third party imports */
 const b58 = require('base-58')

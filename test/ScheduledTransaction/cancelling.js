@@ -11,7 +11,7 @@ const ScheduledTransaction = artifacts.require('ScheduledTransaction.sol')
 
 /** Helper Scripts */
 const ipfsNode = require('../../scripts/ipfsNode')
-const Serializer = require('../../scripts/serializeTransaction')
+const Serializer = require('../../scripts/TransactionSerializer')
 const { scheduledTransactionDirectDeploy,
         getBlockNumber } = require('./helpers')
 
