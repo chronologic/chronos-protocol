@@ -1,7 +1,7 @@
 const IPFS = artifacts.require('IPFS.sol')
 const ScheduledTransaction = artifacts.require('ScheduledTransaction.sol')
 
-const Serializer = require('../../scripts/serializeTransaction')
+const Serializer = require('../../scripts/TransactionSerializer')
 
 const scheduledTransactionDirectDeploy = async(opts) => {
     const serializer = new Serializer()

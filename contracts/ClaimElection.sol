@@ -20,7 +20,7 @@ contract ClaimElection is Auth {
     struct Bond {
         uint256 value;
         // uint256 depositedAt;
-    } 
+    }
 
     mapping (address => mapping(uint256 => Bond)) bonds;
     mapping (address => uint256) numBonds;
@@ -28,7 +28,7 @@ contract ClaimElection is Auth {
     // Timenode cooldown
     mapping (address => uint256) cooldown;
 
-    function joinQueue(uint256 _amt)
+    function joinQueue(uint256 _amt, bytes8 _pos)
         public returns (bool success)
     {
         uint256 tokenBal = token.balanceOf(msg.sender);
@@ -40,7 +40,7 @@ contract ClaimElection is Auth {
             value: _amt
         });
 
-        pQueue.insert(_amt, msg.sender);
+        pQueue.insert(_pos, _amt, msg.sender);
 
         // startCooldown(msg.sender);
         return true;

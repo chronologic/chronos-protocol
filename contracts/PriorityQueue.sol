@@ -12,110 +12,276 @@ contract PriorityQueue is Auth {
 
     struct Timenode {
         address at;
+        bytes8 id;
+        bytes8 left;
+        bytes8 right;
         uint256 bond;
     }
 
-    Timenode[] heap;
-    uint256 size;
+    struct Queue {
+        bytes8 first;
+        bytes8 last;
+        uint256 size;
+        uint256 minBond;
+        uint256 maxBond;
+        mapping( bytes8=>Timenode ) timeNodes;
+    }
 
-    function PriorityQueue() public {}
+    Queue heap;
 
-    // Return true if the priority queue is empty
+    event Enter(bytes8 id, uint256 val);
+    event Exit(bytes8 id, uint256 val);
+    event Pop(uint256 val, address addr);
+
+    // function PriorityQueue() public {}
+
+    /**
+	 * isEmpty()
+	 * Returns <bool> true if the PriorityQueue is empty.
+	 */
     function isEmpty()
         public view returns (bool)
     {
-        return size == 0;
+        return heap.size == 0;
     }
 
-    // Returns the next in the priority queue
+    /**
+	 * queueSize()
+	 * Returns <uint256> number of nodes in the PriorityQueue.
+	 */
+    function queueSize()
+        public view returns (uint256)
+    {
+      return heap.size;
+    }
+
+	/**
+	 * firstNode()
+	 * Returns <bytes8> UUID of the next node in the PriorityQueue.
+	 */
+    function firstNode()
+        public view returns (bytes8)
+    {
+      return heap.first;
+    }
+
+	/**
+	 * lastNode()
+	 * Returns <bytes8> UUID of the last node in the PriorityQueue.
+	 */
+    function lastNode()
+        public view returns (bytes8)
+    {
+      return heap.last;
+    }
+
+	/**
+	 * getTimenode()
+	 * Returns <(bytes8, bytes8, bytes8, address, uint256)> tuple containing the UUID,
+	 * left node, right node, address of, and bond value of the Timenode.
+	 */
+    function getTimenode (bytes8 _timeNode)
+        public view returns (bytes8 id, bytes8 left, bytes8 right, address at, uint256 bond)
+    {
+        return (heap.timeNodes[_timeNode].id, heap.timeNodes[_timeNode].left, heap.timeNodes[_timeNode].right, heap.timeNodes[_timeNode].at, heap.timeNodes[_timeNode].bond);
+    }
+
+    /**
+	 * peek()
+	 * Returns <(uint256, address)> tuple containing the bond value and address of the
+	 * first Timenode in the PriorityQueue.
+	 */
     function peek()
         public view returns (uint256, address)
     {
         require(!isEmpty());
-        return (heap[0].bond, heap[0].at);
+        return (heap.timeNodes[heap.first].bond, heap.timeNodes[heap.first].at);
     }
 
-    function getAtIndex(uint256 _idx)
+	/**
+	 * getAtIndex(<bytes8>)
+	 * Returns <(uint256, address)> tuple containg the bond value and address
+	 * of the node at index `_idx`.
+	 */
+    function getAtIndex(bytes8 _idx)
         public view returns (uint256, address)
     {
-        if (_idx >= size) return;
-        return (heap[_idx].bond, heap[_idx].at);
+        if (heap.timeNodes[_idx].at == 0x0) return;
+        return (heap.timeNodes[_idx].bond, heap.timeNodes[_idx].at);
     }
 
-    function insert(uint256 _priority, address _tn) 
-        auth
-        public returns (bool)
+    function snapShotQueue()
+        public view returns (uint256 length,bytes8[] ids,bytes8[] lefts,bytes8[] rights,uint256[] bonds)
     {
-        heap.push(Timenode({
-            at: _tn,
-            bond: _priority
-        }));
-        size += 1; //todo SafeMath
-        percUp(size-1);
+        bytes8[] memory _ids = new bytes8[](heap.size);
+        bytes8[] memory _lefts = new bytes8[](heap.size);
+        bytes8[] memory _rights = new bytes8[](heap.size);
+        uint256[] memory _bonds = new uint256[](heap.size);
+        bytes8 active = heap.first;
+        for( uint i=0; i<heap.size; i++) {
+          _ids[i] = heap.timeNodes[active].id;
+          _lefts[i] = heap.timeNodes[active].left;
+          _rights[i] = heap.timeNodes[active].right;
+          _bonds[i] = heap.timeNodes[active].bond;
+          active = heap.timeNodes[active].right;
+        }
+        return (heap.size, _ids, _lefts, _rights, _bonds);
+    }
+
+	/**
+	 * validateInsertPosition(<bytes8, uint256>)
+	 * Returns <bool> True if the this is the correct insert placement of the _priority value.
+	 */
+    function validateInsertPosition(bytes8 _previousNode, uint256 _priority)
+        public view returns (bool)
+     {
+        if (_previousNode != 0x0) {
+    			// If trying to insert at position not at index 0, require _priority <= previous bond value.
+    			require(heap.timeNodes[_previousNode].bond >= _priority);
+    			if (_previousNode != heap.last) {
+    				bytes8 rightNode = heap.timeNodes[_previousNode].right;
+    				// Always place a new insert behind the ones before it by requiring the _priority
+    				// is greater than the right node's bond value.
+    				require(heap.timeNodes[rightNode].bond < _priority);
+    			}
+        } else { // if _previousNode === 0x0, i.e. try insert at index 0.
+    			if(heap.first != 0x0) {
+    				 //Ensure older nodes, with same bond value remain at the top of the line.
+    				require(heap.timeNodes[heap.first].bond < _priority);
+    			}
+        }
         return true;
     }
 
-    function percUp(uint256 _i)
-        private
+	/**
+	 * insert(<bytes8, uint256, address>)
+	 * Returns <bool> True if the insert is successful.
+	 */
+    function insert(bytes8 _previousNode, uint256 _priority, address _tn)
+        auth
+        public returns (bool)
     {
-        uint256 j = _i;
+        require(validateInsertPosition(_previousNode,_priority));
+        bytes8 _idx = bytes8(keccak256(_tn, _priority, block.timestamp));// reduce posibility of overwriting
 
-        var (newVal, newTn) = getAtIndex(j);
-        while(j > 0 && heap[j / 2].bond < newVal) {
-            heap[j] = heap[j/2];
-            j = j/2;
+        assert(heap.timeNodes[_idx].at == 0x0); // Ensure no overwriting
+
+        bytes8 _right;
+        if (_previousNode == 0x0) {
+          _right = heap.first;
+        } else {
+          _right = heap.timeNodes[_previousNode].right;
         }
-        if (j != _i) {
-            heap[j] = Timenode({
-                at: newTn,
-                bond: newVal
-            });
+
+        heap.timeNodes[_idx] = Timenode(_tn, _idx, _previousNode, _right, _priority );
+        heap.size++;
+
+        if(heap.timeNodes[_idx].left != 0x0) {
+          heap.timeNodes[_previousNode].right = _idx;
+        } else {
+          heap.first = _idx;
+          heap.maxBond = _priority;
         }
+
+        if(heap.timeNodes[_idx].right != 0x0) {
+          heap.timeNodes[ heap.timeNodes[_idx].right ].left = _idx;
+        } else {
+          heap.last = _idx;
+          heap.minBond = _priority;
+        }
+        emit Enter(_idx, _priority);
+        return true;
     }
 
-    event POP(uint256 val, address addr);
+    function remove(bytes8 _timeNode)
+        internal returns (bool)
+    {
+        if (_timeNode == 0x0) { //TODO should be handled correctly
+          return true;
+        }
+
+        uint256 _priority = heap.timeNodes[_timeNode].bond;
+
+        if (heap.timeNodes[_timeNode].left == 0x0) {
+          heap.first = heap.timeNodes[_timeNode].right;
+          heap.maxBond = heap.timeNodes[ heap.timeNodes[_timeNode].right ].bond;
+          heap.timeNodes[ heap.timeNodes[_timeNode].right ].left = 0x0;
+        } else {
+          heap.timeNodes[ heap.timeNodes[_timeNode].left ].right = heap.timeNodes[_timeNode].right;
+        }
+
+        if (heap.timeNodes[_timeNode].right == 0x0) {
+          heap.last = heap.timeNodes[_timeNode].left;
+          heap.minBond = heap.timeNodes[ heap.timeNodes[_timeNode].left ].bond;
+          heap.timeNodes[ heap.timeNodes[_timeNode].left ].right = 0x0;
+        } else {
+          heap.timeNodes[ heap.timeNodes[_timeNode].right ].left = heap.timeNodes[_timeNode].left;
+        }
+
+        delete(heap.timeNodes[_timeNode]);
+        heap.size--;
+        emit Exit(_timeNode, _priority);
+        return true;
+    }
 
     function pop()
         auth
         public returns (uint256 retVal, address retAddr)
     {
         (retVal, retAddr) = peek();
-        heap[0] = heap[size-1];
-        delete heap[size-1];
-        size = size - 1; //todo SafeMath
-        percDown(0);
-        heap.length = heap.length -1;
-        POP(retVal, retAddr);
+        assert(remove(heap.first));
+        emit Pop(retVal, retAddr);
         // retVal returns
     }
 
-    function percDown(uint256 _i)
-        private
-    {
-        uint256 j = _i;
+    function getInsertPosition(uint256 _bond)
+        public view returns (bytes8 _previousNode)
+    { //Should only be called from JS using(.call), to ensure maximum gasOptimization
+        if (_bond > heap.maxBond) {
+			//highest bond will be inserted in index 0
+          	return 0;
+        }
+        if (_bond <= heap.minBond) {
+			//lowest bond inserted into last index
+          	return heap.last;
+        }
 
-        uint256 largest;
-        uint256 left = 2*j+1;
-        uint256 right = left+1;
-
-        if (left < size && heap[left].bond > heap[j].bond) {
-            largest = left;
+		// find middle
+		uint256 mid = (heap.maxBond - heap.minBond) /2;
+        if ((mid + heap.minBond) > _bond ) {
+          	return percUp(_bond);
         } else {
-            largest = j;
+          	return percDown(_bond);
         }
+    }
 
-        if(right < size && heap[right].bond > heap[largest].bond) {
-            largest = right;
+    function percUp (uint256 _bond)
+        public view returns (bytes8 _previousNode)
+    {
+        bytes8 activeNode = heap.timeNodes[heap.last].left;
+        for (uint256 i = heap.size-2; i>0; i--) {
+          	if(activeNode == 0x0) { //If it reaches the top of the queue, should never happen
+            	return 0;
+          	}
+          	if (heap.timeNodes[activeNode].bond >= _bond) {
+            	return activeNode;
+          	}
+          	activeNode = heap.timeNodes[activeNode].left;
         }
+    }
 
-        if (largest != j) {
-            var (newVal, newTn) = getAtIndex(j);
-            heap[j] = heap[largest];
-            heap[largest] = Timenode({
-                at: newTn,
-                bond: newVal
-            });
-            percDown(largest);
-        }
+    function percDown (uint256 _bond)
+        public view returns (bytes8 _previousNode)
+    {
+      	bytes8 activeNode = heap.first;
+      	for (uint256 i = 0; i < heap.size; i++) {
+    			if(activeNode == 0x0) { //If it reaches the end of the queue, should never happen
+    				return heap.last;
+    			}
+    			if (heap.timeNodes[activeNode].bond < _bond) {
+    				return heap.timeNodes[activeNode].left;
+    			}
+    			activeNode = heap.timeNodes[activeNode].right;
+    		}
     }
 }

@@ -9,7 +9,7 @@ contract Auth {
         _;
     }
 
-    function Auth() {
+    function Auth() public {
         authorized = msg.sender;
     }
 
