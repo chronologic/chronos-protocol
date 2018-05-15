@@ -1,4 +1,4 @@
 rm build -rf &&
-rm ../Timenode-v2/build -rf &&
+rm ../timenode/build -rf &&
 truffle migrate --reset &&
-cp build ../Timenode-v2 -r
+cp build ../timenode -r
