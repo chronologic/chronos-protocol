@@ -79,7 +79,9 @@ contract ScheduledTransaction {
         } else { return false; }
     }
 
-    function canExecute(bytes _serializedTransaction) public view returns(bool) {
+    function canExecute(bytes _serializedTransaction) 
+        public view returns(bool)
+    {
         address conditionalDest;
 
         assembly {
