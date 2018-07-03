@@ -25,6 +25,8 @@ contract C_Offchain {
         return users[_user].deposit;
     }
 
+    event Execution(address _user, bytes32 _nonce, bool _success, uint256 _gasUsed);
+
     function execute(
         address _to,
         uint256 _value,
@@ -42,18 +44,22 @@ contract C_Offchain {
 
         bytes32 sigHash = getHash(_to, _value, _data, _nonce, _gasPrice, _gasLimit, _gasToken);
         
-        User storage user = users[recover(sigHash, _sigs, 0)];
+        address recovered = recover(sigHash, _sigs, 0);
+
+        User storage user = users[recovered];
 
         require(user.nonces[_nonce] == false);
         require(user.deposit >= (21000 + _gasLimit) * _gasPrice);
 
         user.nonces[_nonce] = true;
         
-        _to.call.gas(_gasLimit).value(_value)(_data);
+        bool success = _to.call.gas(_gasLimit).value(_value)(_data);
 
         uint256 gasUsed = 21000 + (startGas - gasleft());
         uint256 refundAmt = gasUsed * _gasPrice;
         address(msg.sender).transfer(refundAmt);
+
+        emit Execution(recovered, _nonce, success, gasUsed);
     }
 
     // function verifySignature(bytes32 _hash, bytes _sigs)

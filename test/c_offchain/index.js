@@ -8,6 +8,9 @@ const { utils } = require('ethers');
 
 const C1 = artifacts.require('C_Offchain.sol');
 
+let depositGasUsed;
+let executionGasUsed;
+
 contract('Chronos Offchain', () => {
 
   const [
@@ -26,12 +29,14 @@ contract('Chronos Offchain', () => {
   })
 
   it('allows for a deposit', async () => {
-    await c1.deposit({
+    const res = await c1.deposit({
       from: me,
       value: web3.toWei('1', 'ether'),
       gas: 3000000,
       gasPrice: web3.toWei('3', 'gwei'),
     })
+
+    depositGasUsed = res.receipt.gasUsed
 
     const depositAmt = await c1.getDeposit(me);
     expect(depositAmt.toString()).to.equal(web3.toWei('1', 'ether'));
@@ -109,7 +114,47 @@ contract('Chronos Offchain', () => {
 
     expect(dataHashed).to.equal(contractHashed);
 
+    // console.log(dataHashed)
+    // console.log(contractHashed)
 
+    const sig = web3.eth.sign(me, dataHashed);
 
+    // console.log(sig)
+
+    const recovered = await c1.recover(dataHashed, sig, 0);
+
+    expect(recovered).to.equal(me);
+    // console.log(recovered)
+    // console.log(me)
+
+    const res = await c1.execute(
+      Params.to,
+      Params.value,
+      Params.data,
+      Params.nonce,
+      Params.gasPrice,
+      Params.gasLimit,
+      Params.gasToken,
+      sig,
+      {
+        from: second,
+        gas: 3500000,
+        gasPrice: Params.gasPrice,
+      }
+    );
+
+    const { _user, _nonce, _success, _gasUsed } = res.logs[0].args;
+
+    expect(_user).to.equal(me);
+    expect(_nonce).to.equal(Params.nonce);
+    expect(_success).to.equal(true);
+    console.log(_gasUsed.toNumber());
+
+    executionGasUsed = res.receipt.gasUsed;
+  })
+
+  after(() => {
+    console.log('DEPOSIT GAS USED: ' + depositGasUsed);
+    console.log('EXECUTION GAS USED: '+ executionGasUsed);
   })
 })
