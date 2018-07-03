@@ -42,3 +42,7 @@ const encode = (
     ]
   );
 }
+
+module.exports = {
+  encode,
+}

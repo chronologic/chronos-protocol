@@ -66,11 +66,11 @@ library ParseLib {
             value := mload(add(_serializedTransaction, 0x80))
             temporalUnit := mload(add(_serializedTransaction, 0xa0))
             executionWindowStart := mload(add(_serializedTransaction, 0xc0))
-            executionWindowLength := mload(add(_serializedTransaction, 0x100))
-            bounty := mload(add(_serializedTransaction, 0x120))
+            executionWindowLength := mload(add(_serializedTransaction, 0xf0))
+            bounty := mload(add(_serializedTransaction, 0x100))
         }
 
-        bytes memory data = getBytesAtLocation(_serializedTransaction, 0x160);
+        bytes memory data = getBytesAtLocation(_serializedTransaction, 0x140);
 
         return Transaction(
             to,

@@ -18,10 +18,6 @@ contract ScheduledTransaction {
 
     State public state = State.Null;
 
-    struct Transaction {
-
-    }
-
     /**
      * MODIFIER
      */
@@ -101,7 +97,7 @@ contract ScheduledTransaction {
         public view returns (address owner)
     {
         assembly {
-            owner := mload(add(_serializedTransaction, 0x140))
+            owner := mload(add(_serializedTransaction, 0x120))
         }
     }
 
