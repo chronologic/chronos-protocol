@@ -20,6 +20,7 @@
   "homepage": "https://github.com/chronologic/EAC-v2#readme",
   "dependencies": {
     "@digix/tempo": "^0.2.0",
+    "@optionality.io/clone-factory": "^0.1.6",
     "base-58": "0.0.1",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
