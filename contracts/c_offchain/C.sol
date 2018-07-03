@@ -1,4 +1,5 @@
 pragma solidity ^0.4.24;
+pragma experimental ABIEncoderV2;
 
 contract C_Offchain {
     struct User {
@@ -27,39 +28,82 @@ contract C_Offchain {
 
     event Execution(address _user, bytes32 _nonce, bool _success, uint256 _gasUsed);
 
+    /**
+     * _addressArgs[0] - _to
+     * _addressArgs[1] - _gasToken
+     * _uintArgs[0] - _value
+     * _uintArgs[1] - _gasPrice
+     * _uintArgs[2] - _gasLimit
+     * _bytesArgs[0] - _data
+     * _bytesArgs[1] - _extraData
+     * _bytesArgs[2] - _sig 
+     */
     function execute(
-        address _to,
-        uint256 _value,
-        bytes _data,
-        bytes32 _nonce,
-        uint256 _gasPrice,
-        uint256 _gasLimit,
-        address _gasToken,
-        bytes _sigs
+        address[2] _addressArgs,
+        uint256[3] _uintArgs,
+        bytes[3] _bytesArgs,
+        bytes32 _nonce
     )
         public payable
     {
         uint256 startGas = gasleft();
-        require(startGas >= _gasLimit);
+        require(startGas >= _uintArgs[2]);
 
-        bytes32 sigHash = getHash(_to, _value, _data, _nonce, _gasPrice, _gasLimit, _gasToken);
-        
-        address recovered = recover(sigHash, _sigs, 0);
+        address recovered = recover(
+            getHash(_addressArgs, _uintArgs, _bytesArgs[0], _nonce, _bytesArgs[1]),
+            _bytesArgs[2],
+            0
+        );
+                
+        require(checkUserConditions(recovered, _nonce, _uintArgs));
 
-        User storage user = users[recovered];
+        require(checkExecutionWindow(_bytesArgs[1]));
 
-        require(user.nonces[_nonce] == false);
-        require(user.deposit >= (21000 + _gasLimit) * _gasPrice);
-
-        user.nonces[_nonce] = true;
-        
-        bool success = _to.call.gas(_gasLimit).value(_value)(_data);
+        bool success = _addressArgs[0].call.gas(_uintArgs[2]).value(_uintArgs[0])(_bytesArgs[0]);
 
         uint256 gasUsed = 21000 + (startGas - gasleft());
-        uint256 refundAmt = gasUsed * _gasPrice;
+        uint256 refundAmt = gasUsed * _uintArgs[1];
         address(msg.sender).transfer(refundAmt);
 
         emit Execution(recovered, _nonce, success, gasUsed);
+    }
+
+    function checkExecutionWindow(bytes _extraData)
+        public view returns (bool) 
+    {
+        uint256 temporalUnit;
+        uint256 executionWindowStart;
+        uint256 executionWindowLength;
+
+        assembly {
+            temporalUnit := mload(add(_extraData, 0x40))
+            executionWindowStart := mload(add(_extraData, 0x60))
+            executionWindowLength := mload(add(_extraData, 0x80))
+        }
+
+        if (temporalUnit == 1) {
+            return (
+                block.number >= executionWindowStart &&
+                block.number < executionWindowStart + executionWindowLength
+            )
+        } else if (temporalUnit == 2) {
+            return (
+                block.timestamp >= executionWindowStart &&
+                block.timestamp < executionWindowStart + executionWindowLength
+            )
+        } else { revert("UNSUPPORTED TEMPORAL UNIT"); }
+    }
+
+    function checkUserConditions(address _recovered, bytes32 _nonce, uint[3] _uintArgs)
+        internal returns (bool)
+    {
+        User storage user = users[_recovered];
+
+        require(user.nonces[_nonce] == false);
+        require(user.deposit >= (21000 + _uintArgs[2]) * _uintArgs[1]);
+
+        user.nonces[_nonce] = true;
+        return true;
     }
 
     // function verifySignature(bytes32 _hash, bytes _sigs)
@@ -107,27 +151,26 @@ contract C_Offchain {
     }
 
     function getHash(
-        address _to,
-        uint256 _value,
+        address[2] _addressArgs,
+        uint256[3] _uintArgs,
         bytes _data,
         bytes32 _nonce,
-        uint256 _gasPrice,
-        uint256 _gasLimit,
-        address _gasToken
+        bytes _extraData
     )
         public view returns (bytes32)
     {
         return keccak256(
             SIG_PREFIX,
             address(this),
-            _to,
-            _value,
+            _addressArgs[0],
+            _uintArgs[0],
             keccak256(_data),
             _nonce,
-            _gasPrice,
-            _gasLimit,
-            _gasToken,
-            CALL_PREFIX
+            _uintArgs[1],
+            _uintArgs[2],
+            _addressArgs[1],
+            CALL_PREFIX,
+            keccak256(_extraData)
             // new bytes()
         );
     }
