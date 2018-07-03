@@ -5,7 +5,7 @@ const fs = require('fs');
 const DEPLOY_TYPE = 0;
 
 // Chronos Offchain
-const c1 = artifacts.require('C.sol');
+const c1 = artifacts.require('C_Offchain.sol');
 
 // Chronos Onchain
 const EventEmitter = artifacts.require('EventEmitter.sol');

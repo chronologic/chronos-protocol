@@ -19,6 +19,12 @@ contract C_Offchain {
         users[msg.sender].deposit += msg.value;
     }
 
+    function getDeposit(address _user)
+        public view returns (uint256)
+    {
+        return users[_user].deposit;
+    }
+
     function execute(
         address _to,
         uint256 _value,
@@ -39,6 +45,7 @@ contract C_Offchain {
         User storage user = users[recover(sigHash, _sigs, 0)];
 
         require(user.nonces[_nonce] == false);
+        require(user.deposit >= (21000 + _gasLimit) * _gasPrice);
 
         user.nonces[_nonce] = true;
         
@@ -56,6 +63,12 @@ contract C_Offchain {
 
     // }
 
+    function gethSignMessage(bytes32 _hash)
+        public pure returns (bytes32)
+    {
+        return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", _hash));
+    }
+
     function recover(bytes32 _hash, bytes _sigs, uint256 _pos)
         public pure returns (address)
     {
@@ -64,7 +77,7 @@ contract C_Offchain {
         bytes32 s;
         (v, r, s) = sigSplit(_sigs, _pos);
 
-        return ecrecover(_hash,v,r,s);
+        return ecrecover(gethSignMessage(_hash),v,r,s);
     }
 
     function sigSplit(bytes _sigs, uint256 _pos)
@@ -81,6 +94,8 @@ contract C_Offchain {
 
             v := and(mload(add(_sigs, mul(0x60, pos))), 0xff)
         }
+
+        if (v < 27) { v += 27; }
 
         require(v == 27 || v == 28);
     }

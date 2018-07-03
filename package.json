@@ -7,6 +7,7 @@
     "test": "test"
   },
   "scripts": {
+    "test_offchain": "truffle test test/c_offchain/*",
     "test": "truffle test"
   },
   "repository": {
