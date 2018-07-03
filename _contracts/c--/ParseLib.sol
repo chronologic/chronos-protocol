@@ -34,15 +34,15 @@ library ParseLib {
     }
 
     function payBounty(Transaction _T)
-        public
+        public view returns (bool)
     {
-        msg.sender.transfer(_T.bounty);
+        return msg.sender.transfer(_T.bounty);
     }
 
     function execute(Transaction _T) 
-        public returns (bool)
+        public payable returns (bool)
     {
-        require(inExecutionWindow(_T));
+        require(_T.inExecutionWindow());
         require(_T.gasPrice == tx.gasprice);
         return _T.to.call.gas(_T.gas).value(_T.value)(_T.data);
     }
@@ -90,12 +90,12 @@ library ParseLib {
     {
         uint256 start;
         assembly {
-            start := mload(add(_data, _location))
+            start := mload(add(_data), _location)
         }
 
         // First get the locations based on `start` position.
         uint256 len = start + 0x20;
-        uint256 data = len + 0x20;
+        uint256 ret = len + 0x20;
 
         assembly {
             // Overwrite the values onto the locations.
@@ -125,7 +125,7 @@ library ParseLib {
         public pure
     {
         // Copy word-length chunks while possible
-        for (; _len >= 0x20; _len -= 0x20) {
+        for (; _len >= 0x20; len -= 0x20) {
             assembly {
                 mstore(_dest, mload(_src))
             }

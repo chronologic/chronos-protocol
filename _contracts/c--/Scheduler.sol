@@ -1,7 +1,6 @@
 pragma solidity ^0.4.24;
 
 import "./EventEmitter.sol";
-import "./ScheduledTransaction.sol";
 
 import "@optionality.io/clone-factory/contracts/CloneFactory.sol";
 
@@ -19,12 +18,12 @@ contract Scheduler is CloneFactory {
         scheduledTxCore = _scheduledTxCore;
     }
 
-    function schedule(bytes _serializedTransaction)
+    function scheduled(bytes _serializedTransaction)
         public payable returns (address scheduledTx)
     {
         uint256 bounty;
         uint256 fee;
-        uint256 callGas;
+        uint256 gas;
         uint256 gasPrice;
         uint256 value;
 
@@ -36,7 +35,7 @@ contract Scheduler is CloneFactory {
             fee := mload(add(_serializedTransaction, 288))
         }
 
-        uint256 endowment = (callGas * gasPrice) + bounty + fee + value;
+        uint256 endowment = (gas * gasPrice) + bounty + fee + value;
         require(msg.value >= endowment);
 
         bytes32 txHash = keccak256(_serializedTransaction);
@@ -45,7 +44,7 @@ contract Scheduler is CloneFactory {
         require(scheduledTx != address(0x0));
 
         ScheduledTransaction(scheduledTx).initialize.value(msg.value)(
-            txHash
+
         );
 
         require(

@@ -1,11 +1,8 @@
 pragma solidity ^0.4.24;
-pragma experimental ABIEncoderV2;
 
 import "./ParseLib.sol";
 
 contract ScheduledTransaction {
-    using ParseLib for *;
-    
     bytes32 public dataHash;
 
     enum State {
@@ -55,14 +52,14 @@ contract ScheduledTransaction {
         requireInState(State.Initialized)
         public returns (bool)
     {
-        ParseLib.Transaction memory tx_ = ParseLib.fromData(_serializedTransaction);
+        ParseLib.Transaction tx_ = ParseLib.fromData(_serializedTransaction);
 
-        require(gasleft() >= tx_.gas + 180000 - 25000);
+        require(gasleft() >= tx_.callGas + 180000 - 25000);
 
-        // require(tx_.inExecutionWindow());
-        // require(tx_.gasPrice == tx.gasprice);
+        require(tx_.inExecutionWindow());
+        require(tx_.gasPrice == tx.gasprice);
 
-        bool success = tx_.execute();
+        bool success = _T.execute();
         
         if (success) {
             state = State.Success;
@@ -71,7 +68,7 @@ contract ScheduledTransaction {
         tx_.payBounty();
 
         // Transfer the rest to the owner
-        getOwner(_serializedTransaction).transfer(address(this).balance);
+        getOwner().transfer(address(this).balance);
 
         return true;
     }
@@ -84,7 +81,7 @@ contract ScheduledTransaction {
         require(msg.sender == getOwner(_serializedTransaction));
 
         state = State.Cancelled;
-        getOwner(_serializedTransaction).transfer(address(this).balance);
+        owner.transfer(address(this).balance);
         return true;
     }
 
@@ -92,16 +89,16 @@ contract ScheduledTransaction {
         requireInState(State.Success)
         public payable returns (bool)
     {
-        require(msg.sender == getOwner(_serializedTransaction));
+        require(msg.sender = getOwner(_serializedTransaction));
         return _to.call.value(msg.value)(_data);
     }
 
     function getOwner(bytes _serializedTransaction)
         requireCorrectData(_serializedTransaction)
-        public view returns (address owner)
+        public pure returns (address owner)
     {
         assembly {
-            owner := mload(add(_serializedTransaction, 0x140))
+            owner := mload(add(_serializedTransaction), 0x140)
         }
     }
 
