@@ -41,7 +41,9 @@ contract C_Offchain {
     function execute(
         address[2] _addressArgs,
         uint256[3] _uintArgs,
-        bytes[3] _bytesArgs,
+        bytes _data,
+        bytes _extraData,
+        bytes _sig,
         bytes32 _nonce
     )
         public payable
@@ -50,16 +52,16 @@ contract C_Offchain {
         require(startGas >= _uintArgs[2]);
 
         address recovered = recover(
-            getHash(_addressArgs, _uintArgs, _bytesArgs[0], _nonce, _bytesArgs[1]),
-            _bytesArgs[2],
+            getHash(_addressArgs, _uintArgs, _data, _nonce, _extraData),
+            _sig,
             0
         );
                 
         require(checkUserConditions(recovered, _nonce, _uintArgs));
 
-        require(checkExecutionWindow(_bytesArgs[1]));
+        require(checkExecutionWindow(_extraData));
 
-        bool success = _addressArgs[0].call.gas(_uintArgs[2]).value(_uintArgs[0])(_bytesArgs[0]);
+        bool success = _addressArgs[0].call.gas(_uintArgs[2]).value(_uintArgs[0])(_data);
 
         uint256 gasUsed = 21000 + (startGas - gasleft());
         uint256 refundAmt = gasUsed * _uintArgs[1];
@@ -67,6 +69,8 @@ contract C_Offchain {
 
         emit Execution(recovered, _nonce, success, gasUsed);
     }
+
+    event DebugExecutionWindow(uint256 _a, uint256 _b, uint256 _c);
 
     function checkExecutionWindow(bytes _extraData)
         public view returns (bool) 
@@ -76,22 +80,25 @@ contract C_Offchain {
         uint256 executionWindowLength;
 
         assembly {
-            temporalUnit := mload(add(_extraData, 0x40))
-            executionWindowStart := mload(add(_extraData, 0x60))
-            executionWindowLength := mload(add(_extraData, 0x80))
+            temporalUnit := mload(add(_extraData, 0x20))
+            executionWindowStart := mload(add(_extraData, 0x40))
+            executionWindowLength := mload(add(_extraData, 0x60))
         }
 
-        if (temporalUnit == 1) {
-            return (
-                block.number >= executionWindowStart &&
-                block.number < executionWindowStart + executionWindowLength
-            )
-        } else if (temporalUnit == 2) {
-            return (
-                block.timestamp >= executionWindowStart &&
-                block.timestamp < executionWindowStart + executionWindowLength
-            )
-        } else { revert("UNSUPPORTED TEMPORAL UNIT"); }
+        // emit DebugExecutionWindow(temporalUnit, executionWindowStart, executionWindowLength);
+
+        return true;
+        // if (temporalUnit == 1) {
+        //     return (
+        //         block.number >= executionWindowStart &&
+        //         block.number < executionWindowStart + executionWindowLength
+        //     );
+        // } else if (temporalUnit == 2) {
+        //     return (
+        //         block.timestamp >= executionWindowStart &&
+        //         block.timestamp < executionWindowStart + executionWindowLength
+        //     );
+        // } else { revert("UNSUPPORTED TEMPORAL UNIT"); }
     }
 
     function checkUserConditions(address _recovered, bytes32 _nonce, uint[3] _uintArgs)
@@ -116,7 +123,7 @@ contract C_Offchain {
     function gethSignMessage(bytes32 _hash)
         public pure returns (bytes32)
     {
-        return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", _hash));
+        return keccak256("\x19Ethereum Signed Message:\n32", _hash);
     }
 
     function recover(bytes32 _hash, bytes _sigs, uint256 _pos)
