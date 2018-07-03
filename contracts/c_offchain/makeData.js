@@ -3,17 +3,18 @@ const ethers = require('ethers');
 const AbiCoder = new ethers.utils.AbiCoder();
 
 const encodeC1 = (
+  from,
   to,
   value,
-  data,
+  dataHash,
   nonce,
   gasPrice,
   gasLimit,
-  gasToken
+  gasToken,
+  methodPrefix,
 ) => {
-  AbiCoder.encode(
+  return '0x19c1' + AbiCoder.encode(
     [
-      'bytes4',
       'address',
       'address',
       'uint256',
@@ -26,17 +27,20 @@ const encodeC1 = (
       'bytes',
     ], 
     [
-      '0x19c1',
-      '0x0',
-      to,
-      value,
-      dataHash,
-      nonce,
-      gasPrice,
-      gasLimit,
-      gasToken,
-      '0x00',
-      '0x0',
+      from,
+      // to,
+      // value,
+      // dataHash,
+      // nonce,
+      // gasPrice,
+      // gasLimit,
+      // gasToken,
+      // methodPrefix,
+      // '0x0',
     ]
-  )
+  ).slice(2);
+}
+
+module.exports = {
+  encodeC1,
 }

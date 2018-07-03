@@ -7,9 +7,9 @@ contract C_Offchain {
     }
 
     // /x19 /xc1 where /x19 is required and /xc1 for chronos v.1
-    bytes4 constant SIG_PREFIX = hex"19c1";
+    bytes2 constant public SIG_PREFIX = hex"19c1";
 
-    bytes4 constant CALL_PREFIX = bytes4(keccak256("execute(bytes,bytes)"));
+    bytes4 constant public CALL_PREFIX = bytes4(keccak256("execute(bytes,bytes)"));
 
     mapping(address => User) users;
 
@@ -109,7 +109,7 @@ contract C_Offchain {
         uint256 _gasLimit,
         address _gasToken
     )
-        public returns (bytes32)
+        public view returns (bytes32)
     {
         return keccak256(
             SIG_PREFIX,
@@ -121,8 +121,8 @@ contract C_Offchain {
             _gasPrice,
             _gasLimit,
             _gasToken,
-            CALL_PREFIX,
-            0
+            CALL_PREFIX
+            // new bytes()
         );
     }
 
