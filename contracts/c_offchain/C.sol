@@ -2,6 +2,7 @@ pragma solidity ^0.4.24;
 pragma experimental ABIEncoderV2;
 
 contract C_Offchain {
+
     struct User {
         uint256 deposit;
         mapping (bytes32 => bool) nonces;
@@ -27,6 +28,8 @@ contract C_Offchain {
     }
 
     event Execution(address _user, bytes32 _nonce, bool _success, uint256 _gasUsed);
+
+    // event logGas(uint256 startGas, uint256 curGas, uint256 diff);
 
     /**
      * _addressArgs[0] - _to
@@ -60,14 +63,19 @@ contract C_Offchain {
         require(checkUserConditions(recovered, _nonce, _uintArgs));
 
         require(checkExecutionWindow(_extraData));
-
+        // Roughly costs ~28k gas for calculations up to here
+        // emit logGas(startGas, gasleft(), startGas - gasleft());
         bool success = _addressArgs[0].call.gas(_uintArgs[2]).value(_uintArgs[0])(_data);
+
+        // uint256 afterExecuteGas = gasleft();
 
         uint256 gasUsed = 21000 + (startGas - gasleft());
         uint256 refundAmt = gasUsed * _uintArgs[1];
         address(msg.sender).transfer(refundAmt);
 
         emit Execution(recovered, _nonce, success, gasUsed);
+        // roughly ~9800 for all calculation afterward.
+        // emit logGas(afterExecuteGas, gasleft(), afterExecuteGas -gasleft());
     }
 
     event DebugExecutionWindow(uint256 _a, uint256 _b, uint256 _c);
@@ -126,20 +134,35 @@ contract C_Offchain {
         return keccak256("\x19Ethereum Signed Message:\n32", _hash);
     }
 
-    function recover(bytes32 _hash, bytes _sigs, uint256 _pos)
-        public pure returns (address)
+    event debug2(address c);
+
+    function recover2(bytes32 _hash, uint8 _v, bytes32 _r, bytes32 _s)
+        public returns (address)
     {
+        return ecrecover(gethSignMessage(_hash), _v, r, s);
+    }
+
+    function recover(bytes32 _hash, bytes _sigs, uint256 _pos)
+        public view returns (address)
+    {
+        // emit debug1(_sigs);
         uint8 v;
         bytes32 r;
         bytes32 s;
         (v, r, s) = sigSplit(_sigs, _pos);
 
-        return ecrecover(gethSignMessage(_hash),v,r,s);
+        address recovered = ecrecover(gethSignMessage(_hash),v,r,s);
+        // emit debug2(recovered);
+        return recovered;
     }
 
+    event debug1(bytes a);
+    event debug(uint8 v, bytes32 r, bytes32 s);
+
     function sigSplit(bytes _sigs, uint256 _pos)
-        public pure returns (uint8 v, bytes32 r, bytes32 s)
+        public view returns (uint8 v, bytes32 r, bytes32 s)
     {
+        // emit debug1(_sigs);
         uint pos = _pos + 1;
 
         // The signature is a compact form of 
@@ -149,12 +172,14 @@ contract C_Offchain {
             r := mload(add(_sigs, mul(0x20, pos)))
             s := mload(add(_sigs, mul(0x40, pos)))
 
-            v := and(mload(add(_sigs, mul(0x60, pos))), 0xff)
+            v := and(mload(add(_sigs, mul(0x60, pos))), 1)
         }
 
         if (v < 27) { v += 27; }
 
         require(v == 27 || v == 28);
+
+        // emit debug(v, r, s);
     }
 
     function getHash(

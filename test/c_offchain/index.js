@@ -2,10 +2,13 @@
 require('chai').use(require('chai-as-promised')).should();
 const { expect } = require('chai');
 
+const ethUtil = require('ethereumjs-util');
+
+const { randomBytes } = require('crypto');
+
 // const { encodeC1 } = require('../../contracts/c_offchain/makeData');
 
 const { utils } = require('ethers');
-
 
 const C1 = artifacts.require('C_Offchain.sol');
 
@@ -23,6 +26,23 @@ contract('Chronos Offchain', () => {
    ] = web3.eth.accounts;
 
   let c1;
+
+  let privKey;
+  let addr;
+
+  // it('generates a new privateKey', async () => {
+  //   privKey = randomBytes(32);
+  //   expect(ethUtil.isValidPrivate(privKey)).to.be.true;
+  //   addr = ethUtil.privateToAddress(privKey)
+  //   // console.log(addr);
+  //   web3.eth.sendTransaction({
+  //     from: me,
+  //     to: addr.toString('hex'),
+  //     value: web3.toWei('10', 'ether'),
+  //   })
+
+  //   expect(web3.eth.getBalance(addr.toString('hex')).toString()).to.equal(web3.toWei('10', 'ether'))
+  // })
 
   it('deploys the contract', async () => {
     c1 = await C1.new();
@@ -52,6 +72,7 @@ contract('Chronos Offchain', () => {
     // console.log(res);
     const res = await c1.recover(hashToSign, sig, 0);
     expect(res).to.equal(me);
+
   })
 
   it('tests execution', async () => {
@@ -136,10 +157,6 @@ contract('Chronos Offchain', () => {
       ]
     )
 
-    // console.log(await c1.SIG_PREFIX());
-    // console.log(data);
-
-    // const dataHashed = web3.sha3(data.slice(0, 6), { encoding: 'hex' });
     const contractHashed = await c1.getHash(
       [
         Params.to,
@@ -157,18 +174,11 @@ contract('Chronos Offchain', () => {
 
     expect(dataHashed).to.equal(contractHashed);
 
-    // console.log(dataHashed)
-    // console.log(contractHashed)
-
     const sig = web3.eth.sign(me, dataHashed);
-
-    // console.log(sig)
 
     const recovered = await c1.recover(dataHashed, sig, 0);
 
     expect(recovered).to.equal(me);
-  //   // console.log(recovered)
-  //   // console.log(me)
 
     const res = await c1.execute(
       [
@@ -201,8 +211,8 @@ contract('Chronos Offchain', () => {
     executionGasUsed = res.receipt.gasUsed;
   })
 
-  after(() => {
-    console.log('DEPOSIT GAS USED: ' + depositGasUsed);
-    console.log('EXECUTION GAS USED: '+ executionGasUsed);
-  })
+  // after(() => {
+  //   console.log('DEPOSIT GAS USED: ' + depositGasUsed);
+  //   console.log('EXECUTION GAS USED: '+ executionGasUsed);
+  // })
 })
