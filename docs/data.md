@@ -8,7 +8,8 @@ The data format for PoC3 Chronos.
 | value     | 33 - 64  | uint256 |
 | gasLimit  | 65 - 96  | uint256 |
 | gasPrice  | 97 - 128 | uint256 |
-| gasToken  | 129 - 160| address |
+| nonce     | 129 - 160| bytes32 |
+| gasToken  | 161 - 192| address |
 | callData  | 161 - `*1`| bytes   |
 | extraData | `*1` - `*2`  | bytes   |
 | signatures| `*2` - `*3`  | bytes   |
