@@ -9,11 +9,11 @@ The data format for PoC3 Chronos.
 | gasLimit  | 65 - 96  | uint256 |
 | gasPrice  | 97 - 128 | uint256 |
 | gasToken  | 129 - 160| address |
-| callData  | 161 - *1 | bytes   |
-| extraData | *1 - *2  | bytes   |
-| signatures| *2 - *3  | bytes   |
+| callData  | 161 - `*1`| bytes   |
+| extraData | `*1` - `*2`  | bytes   |
+| signatures| `*2` - `*3`  | bytes   |
 
-In the above table *1, *2, *3 are used to reflect
+In the above table `*1`, `*2`, `*3` are used to reflect
 the location at the offset of length parameter. 
 
 Read `*1` as offset of `callData.length`.
