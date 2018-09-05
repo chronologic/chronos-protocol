@@ -1,0 +1,25 @@
+{
+  "name": "Chronos",
+  "version": "0.0.1-poc.3",
+  "description": "Advanced Version of the Ethereum Alarm Clock Scheduling service.",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "truffle test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chronologic/chronos.git"
+  },
+  "author": "lsaether",
+  "bugs": {
+    "url": "https://github.com/chronologic/chronos/issues"
+  },
+  "homepage": "https://github.com/chronologic/chronos#readme",
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "truffle": "^5.0.0-beta.0"
+  }
+}
