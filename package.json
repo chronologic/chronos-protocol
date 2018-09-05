@@ -1,7 +1,7 @@
 {
-  "name": "eac-v2",
+  "name": "Chronos",
   "version": "0.0.1",
-  "description": "Version two of the Ethereum Alarm Clock Scheduling service.",
+  "description": "Advanced Version of the Ethereum Alarm Clock Scheduling service.",
   "main": "truffle-config.js",
   "directories": {
     "test": "test"
@@ -11,13 +11,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/chronologic/EAC-v2.git"
+    "url": "git+https://github.com/chronologic/chronos.git"
   },
   "author": "lsaether",
   "bugs": {
-    "url": "https://github.com/chronologic/EAC-v2/issues"
+    "url": "https://github.com/chronologic/chronos/issues"
   },
-  "homepage": "https://github.com/chronologic/EAC-v2#readme",
+  "homepage": "https://github.com/chronologic/chronos#readme",
   "dependencies": {
     "@digix/tempo": "^0.2.0",
     "base-58": "0.0.1",
