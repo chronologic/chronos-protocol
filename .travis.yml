@@ -1,0 +1,15 @@
+dist: trusty
+language: node_js
+node_js:
+  - '8.0.0'
+install:
+  - npm install -g ganache-cli
+  - npm install
+  - truffle version
+script:
+  - npm test
+before_script:
+  - ganache-cli > /dev/null &
+  - sleep 5
+# after_script:
+#   - npm run coverage && cat coverage/lcov.info | coveralls
