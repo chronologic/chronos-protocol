@@ -3,14 +3,14 @@ language: node_js
 node_js:
   - '8.0.0'
 install:
-  - npm install -g truffle@beta
-  - truffle version
   - npm install -g ganache-cli
+  - ganache-cli --version
   - npm install
 script:
   - npm test
 before_script:
   - ganache-cli > /dev/null &
   - sleep 5
+  - npm run version:truffle
 # after_script:
 #   - npm run coverage && cat coverage/lcov.info | coveralls
