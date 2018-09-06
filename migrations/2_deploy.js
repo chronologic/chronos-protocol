@@ -1,33 +1,40 @@
-const ClaimingPool = artifacts.require('ClaimingPool.sol')
-const EventEmitter = artifacts.require('EventEmitter.sol')
-const IPFS = artifacts.require('IPFS.sol')
-const ScheduledTransaction = artifacts.require('ScheduledTransaction.sol')
-const Scheduler = artifacts.require('Scheduler.sol')
+const fs = require('fs');
+
+// 0 - Chronos Offchain
+// 1 - Chronos Onchain
+const DEPLOY_TYPE = 0;
+
+// Chronos Offchain
+const c1 = artifacts.require('C_Offchain.sol');
+
+// Chronos Onchain
+const EventEmitter = artifacts.require('EventEmitter.sol');
+const ParseLib = artifacts.require('ParseLib.sol');
+const ScheduledTransaction = artifacts.require('ScheduledTransaction.sol');
+const Scheduler = artifacts.require('Scheduler.sol');
 
 module.exports = (deployer) => {
-    deployer.deploy(IPFS)
+  if (DEPLOY_TYPE === 0) {
+    deployer.deploy(c1);
+  } else {
+    deployer.deploy(ParseLib)
     .then(() => {
-        return deployer.deploy(EventEmitter)
+      deployer.link(ParseLib, ScheduledTransaction);
+      return deployer.deploy(ScheduledTransaction);
     })
     .then(() => {
-        return deployer.deploy(ScheduledTransaction)
+      return deployer.deploy(EventEmitter);
     })
     .then(() => {
-        return deployer.deploy(
-            Scheduler,
-            EventEmitter.address,
-            "0xCCa19CC61a0B6F5B40525FB3d37124D40b877EF6",
-            IPFS.address,
-            ScheduledTransaction.address,
-        )
+      return deployer.deploy(Scheduler, EventEmitter.address, ScheduledTransaction.address);
     })
     .then(() => {
-        const fs = require('fs')
-        try {
-            fs.writeFileSync('build/a.json', JSON.stringify({
-                eventEmitter: EventEmitter.address,
-                scheduler: Scheduler.address,
-            }))
-        } catch (err) {}
+      fs.writeFileSync('deployed.json', JSON.stringify({
+        eventEmitter: EventEmitter.address,
+        parseLib: ParseLib.address,
+        scheduledTransactionCore: ScheduledTransaction.address,
+        scheduler: Scheduler.address,
+      }));
     })
+  }
 }
