@@ -1,27 +1,30 @@
 pragma solidity ^0.4.24;
 
+pragma experimental ABIEncoderV2;
+// pragma experimental "v0.5.0";
+
 import "./vendor/ZeroEx/LibBytes.sol";
 
 library LibChronosParser {
     using LibBytes for bytes;
 
-    function fields(bytes _data)
-        returns (address to, uint256 value, uint256 gasLimit, uint256 gasPrice, bytes32 nonce, address gasToken, bytes callData, bytes extraData)
+    function fields(bytes memory _data)
+        internal view returns (address to, uint256 value, uint256 gasLimit, uint256 gasPrice, bytes32 nonce, address gasToken, bytes memory callData, bytes memory extraData)
     {
-        to = _data.readAddress(12);
-        value = _data.readUint256(32);
-        gasLimit = _data.readUint256(64);
-        gasPrice = _data.readUint256(96);
-        nonce = _data.readBytes32(128);
-        gasToken = _data.readAddress(172);
-        callData = new bytes(0);
-        extraData = new bytes(0);
-        // callData = _data.readBytesWithLength();
-        // extraData = _data.readBytesWithLength();
+        (to, value, gasLimit, gasPrice, nonce, gasToken, callData, extraData) = abi.decode(_data, (
+            address,
+            uint256,
+            uint256,
+            uint256,
+            bytes32,
+            address,
+            bytes,
+            bytes
+        ));
     }
 
-    function signature(bytes _data)
-        returns (uint8 v, bytes32 r, bytes32 s)
+    function signature(bytes memory _data)
+        internal view returns (uint8 v, bytes32 r, bytes32 s)
     {
         uint256 len = _data.length;
 
@@ -38,9 +41,21 @@ library LibChronosParser {
         require(v == 27 || v == 28);
     }
 
-    function signedBy(bytes _data)
-        returns (address signer)
+    event debug(bytes _a);
+
+    function signedBy(bytes memory _data)
+        internal returns (address signer)
     {
-        signer = address(0x0);
+        (uint8 v, bytes32 r, bytes32 s) = signature(_data);
+        _data = _data.slice(0, _data.length - 0x61);
+        emit debug(_data);
+        return ecrecover(gethSignMessage(keccak256(_data)), v, r, s);
+    }
+
+
+    function gethSignMessage(bytes32 _hash)
+        internal pure returns (bytes32)
+    {
+        return keccak256(abi.encode("\x19Ethereum Signed Message:\n32", _hash));
     }
 }

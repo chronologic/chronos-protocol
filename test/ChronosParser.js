@@ -4,11 +4,6 @@ const { assert } = require('chai');
 
 contract('ChronosParser', (accounts) => {
   
-  // Abstract this to a helper file.
-  const privateKey = web3.utils.randomHex(64);
-  const sig = web3.eth.accounts.sign('data', privateKey);
-  // console.log(sig);
-  // console.log(web3.eth.accounts.privateKeyToAccount(privateKey).address);
   const testParams = {
     to: web3.utils.randomHex(20),
     value: 1,
@@ -18,8 +13,35 @@ contract('ChronosParser', (accounts) => {
     gasToken: web3.utils.randomHex(20),
     callData: web3.utils.randomHex(40),
     extraData: web3.utils.randomHex(36),
-    signature: sig.signature,
   }
+
+  const data = web3.eth.abi.encodeParameters(
+    [
+      'address',
+      'uint256',
+      'uint256',
+      'uint256',
+      'bytes32',
+      'address',
+      'bytes',
+      'bytes',
+    ],
+    [
+      testParams.to,
+      testParams.value,
+      testParams.gasLimit,
+      testParams.gasPrice,
+      testParams.nonce,
+      testParams.gasToken,
+      testParams.callData,
+      testParams.extraData,
+    ],
+  );
+
+  const privateKey = web3.utils.randomHex(64);
+  const sig = web3.eth.accounts.sign(web3.utils.sha3(data), privateKey);
+  console.log(sig);
+  const testAddr = web3.eth.accounts.privateKeyToAccount(privateKey).address;
 
   const encoded = web3.eth.abi.encodeParameters(
     [
@@ -70,9 +92,6 @@ contract('ChronosParser', (accounts) => {
         if (typeof fields[key] === 'string') {
           fields[key] = fields[key].toLowerCase();
         }
-        if (key === 'callData' || key === 'extraData') {
-          return;
-        }
         assert.equal(fields[key], testParams[key], `Failed on key: ${key}`);
       }
     });
@@ -92,6 +111,11 @@ contract('ChronosParser', (accounts) => {
   })
 
   it('Recovers the signer from a correctly formatted byte string', async () => {
-
+    const signedBy = await mockChronosParser.signedBy(encoded);
+    // console.log(signedBy);
+    // console.log(testAddr);
+    console.log(encoded);
+    console.log(testParams.extraData)
+    assert(false);
   })
 })
